@@ -10,12 +10,14 @@ public class StartupWindow : Window
 {
     // ● private fields
     TextBlock lblTitle;
+    Image imgAbout;
     TextBlock lblMessage;
 
     // ● private
     Control CreateContent()
     {
         Grid Panel = new();
+        Panel.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         Panel.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         Panel.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         Panel.RowDefinitions.Add(new RowDefinition(GridLength.Star));
@@ -29,10 +31,17 @@ public class StartupWindow : Window
             Foreground = new SolidColorBrush(Color.FromRgb(32, 36, 40)),
             Text = "PackForge"
         };
+        imgAbout = AvaloniaAssets.FindImage("PackForge-About.png", new Size(220, 220));
+        if (imgAbout != null)
+        {
+            imgAbout.HorizontalAlignment = HorizontalAlignment.Center;
+            imgAbout.Margin = new Thickness(0, 22, 0, 0);
+            imgAbout.Stretch = Stretch.Uniform;
+        }
         lblMessage = new TextBlock
         {
             HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(0, 22, 0, 0),
+            Margin = new Thickness(0, 18, 0, 0),
             FontSize = 18,
             FontWeight = FontWeight.Medium,
             Foreground = new SolidColorBrush(Color.FromRgb(74, 83, 92)),
@@ -42,8 +51,13 @@ public class StartupWindow : Window
         };
 
         Grid.SetRow(lblTitle, 0);
-        Grid.SetRow(lblMessage, 1);
         Panel.Children.Add(lblTitle);
+        if (imgAbout != null)
+        {
+            Grid.SetRow(imgAbout, 1);
+            Panel.Children.Add(imgAbout);
+        }
+        Grid.SetRow(lblMessage, 2);
         Panel.Children.Add(lblMessage);
         return Panel;
     }

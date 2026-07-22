@@ -14,13 +14,21 @@
     <Border Background="#F3F6FA">
         <Grid RowDefinitions="78,*">
             <Border Grid.Row="0" Background="White" BorderBrush="#D7DEE8" BorderThickness="0,0,0,1">
-                <TextBlock Name="lblHeader"
-                           Text="About PackForge"
+                <Grid ColumnDefinitions="Auto,*" Margin="24,0">
+                    <Image Source="avares://PackForge/Assets/PackForge.png"
+                           Width="46"
+                           Height="46"
+                           Stretch="Uniform"
                            VerticalAlignment="Center"
-                           Margin="28,0"
-                           FontSize="25"
-                           FontWeight="SemiBold"
-                           Foreground="#111827"/>
+                           Margin="0,0,14,0"/>
+                    <TextBlock Name="lblHeader"
+                               Grid.Column="1"
+                               Text="About PackForge"
+                               VerticalAlignment="Center"
+                               FontSize="25"
+                               FontWeight="SemiBold"
+                               Foreground="#111827"/>
+                </Grid>
             </Border>
 
             <Grid Grid.Row="1" ColumnDefinitions="280,*" Margin="32,24,32,26">
@@ -28,24 +36,17 @@
                     <Border Width="238"
                             Height="238"
                             CornerRadius="18"
-                            Background="#192A3A"
+                            Background="White"
                             BorderBrush="#2F485C"
                             BorderThickness="1"
                             HorizontalAlignment="Center">
-                        <Grid RowDefinitions="*,Auto">
-                           <TextBlock Text="PF"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       FontSize="74"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F8FAFC"/>
-                            <Border Grid.Row="1" Background="#16A085" Padding="12,8">
-                                <TextBlock Text="PUBLISHER"
-                                           HorizontalAlignment="Center"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="White"/>
-                            </Border>
+                        <Grid ClipToBounds="True">
+                            <Image Source="avares://PackForge/Assets/PackForge.png"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Width="196"
+                                   Height="196"
+                                   Stretch="Uniform"/>
                         </Grid>
                     </Border>
                     <TextBlock Text="PackForge"

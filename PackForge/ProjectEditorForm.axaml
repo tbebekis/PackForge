@@ -1,6 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PackForge.ProjectEditorForm">
+    <UserControl.Styles>
+        <Style Selector="ComboBox">
+            <Setter Property="Width" Value="560"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+    </UserControl.Styles>
     <DockPanel>
         <Border DockPanel.Dock="Top" Classes="ToolbarContainer">
             <StackPanel Name="pnlToolBar" Classes="ToolBar">
@@ -9,7 +15,7 @@
         <TabControl Name="pagerEditor">
             <TabItem Header="General">
                 <ScrollViewer>
-                    <Grid Margin="12" MaxWidth="980" HorizontalAlignment="Left" ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.Column="0" ToolTip.Tip="The PackForge project name. This value is used as the JSON file name in the application Projects folder, so it must be unique and valid as a file name." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Project name"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
                         <TextBox Name="edtName" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" ToolTip.Tip="The human-readable application name. This appears in generated installer scripts, desktop files, menu shortcuts and status text. You can use pattern tokens such as {ProjectName} and {PackageName} so dependent fields follow project renames." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Application name"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
@@ -43,7 +49,7 @@
             </TabItem>
             <TabItem Header="Publish">
                 <ScrollViewer>
-                    <Grid Margin="12" MaxWidth="980" HorizontalAlignment="Left" ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Linux publish" ToolTip.Tip="Settings used to generate and run dotnet publish for the Linux target output that will later feed Debian package generation." FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables or disables the Linux dotnet publish target for this PackForge project." VerticalAlignment="Center" Margin="0,0,8,6"/>
                         <CheckBox Name="chkLinuxEnabled" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
@@ -84,7 +90,7 @@
             </TabItem>
             <TabItem Header="Debian">
                 <ScrollViewer>
-                    <Grid Margin="12" MaxWidth="980" HorizontalAlignment="Left" ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables Debian script generation and Debian validation checks for this project." VerticalAlignment="Center" Margin="0,0,8,6"/>
                         <CheckBox Name="chkDebEnabled" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" ToolTip.Tip="The Debian architecture written to the control file. Use amd64 for normal 64-bit Intel/AMD Linux packages. Required when Debian generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Architecture"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
@@ -114,7 +120,7 @@
             </TabItem>
             <TabItem Header="Inno Setup">
                 <ScrollViewer>
-                    <Grid Margin="12" MaxWidth="980" HorizontalAlignment="Left" ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables Inno Setup script generation and Windows installer validation for this project." VerticalAlignment="Center" Margin="0,0,8,6"/>
                         <CheckBox Name="chkInnoEnabled" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" ToolTip.Tip="The stable Inno Setup application id. Keep this value stable for the same app so Windows upgrades recognize previous installations. Required when Inno Setup generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="AppId"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>

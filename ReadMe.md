@@ -52,9 +52,9 @@ Publish/
   MyApp-Windows-x64/
   build-deb.sh
   MyApp.iss
-  MyApp_2026.7.22_amd64.deb
-  MyApp-2026.7.22-linux.tar.gz
-  MyApp-2026.7.22-windows.zip
+  MyApp_2026.7.23_amd64.deb
+  MyApp-2026.7.23-linux.tar.gz
+  MyApp-2026.7.23-windows.zip
   DebBuild/
 ```
 
