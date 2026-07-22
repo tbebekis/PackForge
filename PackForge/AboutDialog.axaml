@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="860" d:DesignHeight="540"
+        x:Class="PackForge.AboutDialog"
+        Title="About PackForge"
+        Width="860"
+        Height="540"
+        MinWidth="820"
+        MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Border Background="#F3F6FA">
+        <Grid RowDefinitions="78,*">
+            <Border Grid.Row="0" Background="White" BorderBrush="#D7DEE8" BorderThickness="0,0,0,1">
+                <TextBlock Name="lblHeader"
+                           Text="About PackForge"
+                           VerticalAlignment="Center"
+                           Margin="28,0"
+                           FontSize="25"
+                           FontWeight="SemiBold"
+                           Foreground="#111827"/>
+            </Border>
+
+            <Grid Grid.Row="1" ColumnDefinitions="280,*" Margin="32,24,32,26">
+                <StackPanel Grid.Column="0">
+                    <Border Width="238"
+                            Height="238"
+                            CornerRadius="18"
+                            Background="#192A3A"
+                            BorderBrush="#2F485C"
+                            BorderThickness="1"
+                            HorizontalAlignment="Center">
+                        <Grid RowDefinitions="*,Auto">
+                           <TextBlock Text="PF"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="74"
+                                       FontWeight="SemiBold"
+                                       Foreground="#F8FAFC"/>
+                            <Border Grid.Row="1" Background="#16A085" Padding="12,8">
+                                <TextBlock Text="PUBLISHER"
+                                           HorizontalAlignment="Center"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <TextBlock Text="PackForge"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0"
+                               FontSize="32"
+                               FontWeight="SemiBold"
+                               Foreground="#111827"/>
+                    <TextBlock Text=".NET Publisher"
+                               HorizontalAlignment="Center"
+                               FontSize="15"
+                               Foreground="#64748B"/>
+                </StackPanel>
+
+                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="30,0,0,0">
+                    <TextBlock Name="lblTitle"
+                               Text="Publisher and package maker for .Net applications (Linux and Windows)"
+                               FontSize="27"
+                               FontWeight="SemiBold"
+                               Foreground="#111827"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Name="lblDescription"
+                               Grid.Row="1"
+                               Text="PackForge manages JSON-based packaging projects, runs dotnet publish, generates Debian build scripts, and creates Inno Setup scripts that stay visible and editable."
+                               Margin="0,14,0,0"
+                               FontSize="15"
+                               LineHeight="23"
+                               Foreground="#475569"
+                               TextWrapping="Wrap"/>
+
+                    <Border Grid.Row="2"
+                            Margin="0,24,0,0"
+                            Padding="16"
+                            Background="White"
+                            BorderBrush="#CBD5E1"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                        <Grid ColumnDefinitions="*,1,*,1,*">
+                            <StackPanel>
+                                <TextBlock Text="VERSION" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Name="lblVersion" Text="1.0.0" Margin="0,10,0,0" FontSize="18" Foreground="#111827"/>
+                            </StackPanel>
+                            <Rectangle Grid.Column="1" Fill="#CBD5E1"/>
+                            <StackPanel Grid.Column="2" Margin="20,0">
+                                <TextBlock Text="RUNTIME" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Name="lblRuntime" Text=".NET" Margin="0,10,0,0" FontSize="18" Foreground="#111827"/>
+                            </StackPanel>
+                            <Rectangle Grid.Column="3" Fill="#CBD5E1"/>
+                            <StackPanel Grid.Column="4" Margin="20,0,0,0">
+                                <TextBlock Text="PROJECTS" FontSize="12" FontWeight="SemiBold" Foreground="#64748B"/>
+                                <TextBlock Name="lblProjectKind" Text=".NET" Margin="0,10,0,0" FontSize="18" Foreground="#111827"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="3" Margin="0,24,0,0" Spacing="8">
+                        <TextBlock Name="lblCopyright"
+                                   Text="Copyright (c) 2026 Theodoros Bebekis"
+                                   FontSize="15"
+                                   Foreground="#334155"/>
+                        <TextBlock Text="Licensed under the MIT License."
+                                   FontSize="14"
+                                   Foreground="#64748B"/>
+                        <TextBlock Text="Built with .NET and Tripous."
+                                   FontSize="14"
+                                   Foreground="#64748B"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                        <Button Name="btnCopySystemInfo" Content="Copy system info" Click="AnyClick" MinWidth="160"/>
+                        <Button Name="btnClose" Content="Close" Click="AnyClick" MinWidth="130"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

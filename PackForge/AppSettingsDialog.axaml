@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="620"
+        x:Class="PackForge.AppSettingsDialog"
+        Title="Application Settings"
+        Width="760"
+        Height="620"
+        MinWidth="720"
+        MinHeight="580"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
+            <Button Name="btnOK" Content="OK" Click="AnyClick" IsDefault="True"/>
+            <Button Name="btnCancel" Content="Cancel" Click="AnyClick" IsCancel="True"/>
+        </StackPanel>
+
+        <TabControl>
+            <TabItem Header="Tools">
+                <Grid Margin="8" ColumnDefinitions="190,*,Auto" RowDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Inno compiler path" ToolTip.Tip="Full path to ISCC.exe. Leave empty to let PackForge search standard Program Files Inno Setup folders on Windows." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                    <TextBox Name="edtInnoSetupCompilerPath" Grid.Row="0" Grid.Column="1" Margin="0,0,8,6"/>
+                    <Button Name="btnDetectInno" Grid.Row="0" Grid.Column="2" Content="Detect" Click="AnyClick" Margin="0,0,0,6"/>
+                    <TextBlock Name="lblInnoStatus" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" TextWrapping="Wrap" Foreground="Gray"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Project Defaults">
+                <ScrollViewer>
+                    <Grid Margin="8" MaxWidth="680" HorizontalAlignment="Left" ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Maintainer" ToolTip.Tip="Default maintainer/publisher name copied to newly created projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDefaultMaintainer" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Homepage" ToolTip.Tip="Default homepage copied to newly created projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDefaultHomepage" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Configuration" ToolTip.Tip="Default dotnet publish configuration for new Linux and Windows publish profiles." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultConfiguration" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="Release"/><ComboBoxItem Content="Debug"/></ComboBox>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Linux runtime" ToolTip.Tip="Default runtime identifier for new Linux publish profiles." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultLinuxRuntime" Grid.Row="3" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="linux-x64"/><ComboBoxItem Content="linux-arm64"/><ComboBoxItem Content="linux-arm"/></ComboBox>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Windows runtime" ToolTip.Tip="Default runtime identifier for new Windows publish profiles." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultWindowsRuntime" Grid.Row="4" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="win-x64"/><ComboBoxItem Content="win-x86"/><ComboBoxItem Content="win-arm64"/></ComboBox>
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Self-contained" ToolTip.Tip="Default SelfContained value for new publish profiles." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkDefaultSelfContained" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Single file" ToolTip.Tip="Default PublishSingleFile value for new publish profiles." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkDefaultPublishSingleFile" Grid.Row="6" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Trimmed" ToolTip.Tip="Default PublishTrimmed value for new publish profiles." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkDefaultPublishTrimmed" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Deb architecture" ToolTip.Tip="Default Debian architecture for new projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultDebArchitecture" Grid.Row="8" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="amd64"/><ComboBoxItem Content="arm64"/><ComboBoxItem Content="armhf"/></ComboBox>
+                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Deb section" ToolTip.Tip="Default Debian package section for new projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultDebSection" Grid.Row="9" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="devel"/><ComboBoxItem Content="utils"/><ComboBoxItem Content="database"/><ComboBoxItem Content="net"/><ComboBoxItem Content="misc"/></ComboBox>
+                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Deb priority" ToolTip.Tip="Default Debian package priority for new projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultDebPriority" Grid.Row="10" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="optional"/><ComboBoxItem Content="required"/><ComboBoxItem Content="important"/><ComboBoxItem Content="standard"/><ComboBoxItem Content="extra"/></ComboBox>
+                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Desktop categories" ToolTip.Tip="Default .desktop categories for generated Debian projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDefaultDesktopCategories" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Desktop keywords" ToolTip.Tip="Default .desktop keywords for generated Debian projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDefaultDesktopKeywords" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="13" Grid.Column="0" Text="Inno compression" ToolTip.Tip="Default Inno Setup compression for new projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultInnoCompression" Grid.Row="13" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="lzma2/ultra64"/><ComboBoxItem Content="lzma"/><ComboBoxItem Content="zip"/><ComboBoxItem Content="bzip"/><ComboBoxItem Content="none"/></ComboBox>
+                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Inno solid" ToolTip.Tip="Default SolidCompression value for new Inno Setup projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkDefaultInnoSolidCompression" Grid.Row="14" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="15" Grid.Column="0" Text="Inno privileges" ToolTip.Tip="Default PrivilegesRequired value for new Inno Setup projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultInnoPrivileges" Grid.Row="15" Grid.Column="1" IsEditable="True" Margin="0,0,0,6"><ComboBoxItem Content="lowest"/><ComboBoxItem Content="admin"/><ComboBoxItem Content="poweruser"/></ComboBox>
+                        <TextBlock Grid.Row="16" Grid.Column="0" Text="Install scope" ToolTip.Tip="Default Windows install scope for new Inno Setup projects." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDefaultInnoInstallScope" Grid.Row="16" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="User only"/><ComboBoxItem Content="All Users"/></ComboBox>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

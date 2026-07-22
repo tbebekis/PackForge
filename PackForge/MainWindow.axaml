@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+        x:Class="PackForge.MainWindow"
+        Width="1280"
+        Height="800"
+        MinWidth="960"
+        MinHeight="640"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        Title="PackForge">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Classes="ToolbarContainer">
+            <StackPanel Name="pnlToolBar" Classes="ToolBar">
+            </StackPanel>
+        </Border>
+
+        <Border Name="StatusBar" DockPanel.Dock="Bottom" Height="28" Background="#F8FAFC" BorderBrush="#D0D5DD" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="Auto, 1, *">
+                <TextBlock Name="lblStatus" Grid.Column="0" Text="PackForge" VerticalAlignment="Center" Margin="8,0"/>
+                <Rectangle Grid.Column="1" Width="1" Fill="#D0D5DD" />
+                <TextBlock Name="lblMessage" Grid.Column="2" Text="Ready" VerticalAlignment="Center" Margin="8,0"/>
+            </Grid>
+        </Border>
+
+        <Grid Name="pnlBody" ColumnDefinitions="360, 4, *">
+            <TabControl Name="pagerSideBar" Grid.Column="0" />
+            <GridSplitter Name="Splitter" Grid.Column="1" ResizeDirection="Columns" />
+            <Grid Name="pnlRight" Grid.Column="2" RowDefinitions="*, 4, 140">
+                <TabControl Name="pagerContent" Grid.Row="0" />
+                <GridSplitter Name="Splitter2" Grid.Row="1" ResizeDirection="Rows" />
+                <TextBox Name="edtLog" Grid.Row="2"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalContentAlignment="Top"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         FontFamily="Cascadia Mono, Cascadia Code, Consolas, Courier New, Monospace"
+                         FontSize="12"/>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

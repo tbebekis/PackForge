@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PackForge.ProjectListForm">
+    <Grid RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Classes="ToolbarContainer">
+            <StackPanel Name="pnlToolBar" Classes="ToolBar">
+            </StackPanel>
+        </Border>
+        <ListBox Name="lboProjects" Grid.Row="1" Margin="8" />
+    </Grid>
+</UserControl>
