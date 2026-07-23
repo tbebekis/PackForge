@@ -30,6 +30,7 @@ public partial class MainWindow : Window
         fContentHandler.CanUserReorderTabs = true;
         fContentHandler.IsTabHeaderContextMenuVisible = true;
         CreateToolBar();
+        SetLogVisible(AppHost.Settings.IsLogVisible);
         AppHost.InitializeUi(fSideBarHandler, fContentHandler);
         UpdateStatusBar();
     }
@@ -74,11 +75,17 @@ public partial class MainWindow : Window
         Directory.CreateDirectory(SysConfig.AppFolderPath);
         Sys.OpenFileExplorer(SysConfig.AppFolderPath);
     }
+    void SetLogVisible(bool Value)
+    {
+        Splitter2.IsVisible = Value;
+        edtLog.IsVisible = Value;
+    }
     void ToggleLog()
     {
         bool IsVisible = !edtLog.IsVisible;
-        Splitter2.IsVisible = IsVisible;
-        edtLog.IsVisible = IsVisible;
+        SetLogVisible(IsVisible);
+        AppHost.Settings.IsLogVisible = IsVisible;
+        AppHost.Settings.Save();
     }
     async Task ShowSettings()
     {

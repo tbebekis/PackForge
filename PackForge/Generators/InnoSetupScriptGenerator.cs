@@ -54,7 +54,7 @@ static public class InnoSetupScriptGenerator
         if (!Project.Inno.IsEnabled)
             throw new Exception("Inno Setup generation is disabled.");
 
-        string PublishRootFolder = R(Project, Project.PublishRootFolder);
+        string PublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project);
         if (string.IsNullOrWhiteSpace(PublishRootFolder))
             throw new Exception("Publish root folder is required.");
 
@@ -66,7 +66,7 @@ static public class InnoSetupScriptGenerator
 
         string ScriptFilePath = Path.Combine(PublishRootFolder, ScriptFileName);
         string SourceFolder = R(Project, Project.Inno.WindowsPublishFolderName);
-        string OutputFolder = R(Project, Project.InstallerOutputFolderOrFallback);
+        string OutputFolder = PublisherProjectPatterns.ResolveInstallerOutputFolder(Project);
         if (string.IsNullOrWhiteSpace(OutputFolder) || OutputFolder.IsSameText(PublishRootFolder))
             OutputFolder = ".";
 

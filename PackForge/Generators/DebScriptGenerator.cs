@@ -58,7 +58,7 @@ static public class DebScriptGenerator
         if (!Project.Deb.IsEnabled)
             throw new Exception("Debian generation is disabled.");
 
-        string PublishRootFolder = R(Project, Project.PublishRootFolder);
+        string PublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project);
         if (string.IsNullOrWhiteSpace(PublishRootFolder))
             throw new Exception("Publish root folder is required.");
 
@@ -72,7 +72,7 @@ static public class DebScriptGenerator
         string CommandName = R(Project, Project.Deb.CommandName);
         string InstallDir = R(Project, Project.Deb.InstallDir);
         string LinuxPublishFolder = Path.Combine(PublishRootFolder, R(Project, Project.LinuxPublish.OutputFolderName));
-        string InstallerOutputFolder = R(Project, Project.InstallerOutputFolderOrFallback);
+        string InstallerOutputFolder = PublisherProjectPatterns.ResolveInstallerOutputFolder(Project);
         string ScriptFileName = R(Project, Project.Deb.ScriptFileName);
         string IconFilePath = R(Project, Project.LinuxIconFilePath);
         string OutputFileName = R(Project, Project.Deb.OutputFileNamePattern);

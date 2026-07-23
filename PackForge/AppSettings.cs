@@ -32,6 +32,10 @@ public class AppSettings: SettingsBase
 
     // ● properties
     /// <summary>
+    /// Gets or sets a value indicating whether the application log is visible.
+    /// </summary>
+    public bool IsLogVisible { get; set; } = true;
+    /// <summary>
     /// Gets or sets the explicit Inno Setup compiler executable path.
     /// </summary>
     public string InnoSetupCompilerPath { get; set; } = string.Empty;

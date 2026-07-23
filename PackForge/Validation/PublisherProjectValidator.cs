@@ -46,8 +46,9 @@ static public class PublisherProjectValidator
         string PackageName = Resolve(Project.PackageName, Project);
         string ProjectFilePath = Resolve(Project.ProjectFilePath, Project);
         string SolutionFolder = Resolve(Project.SolutionFolder, Project);
-        string PublishRootFolder = Resolve(Project.PublishRootFolder, Project);
-        string InstallerOutputFolder = Resolve(Project.InstallerOutputFolderOrFallback, Project);
+        string RawPublishRootFolder = Resolve(Project.PublishRootFolder, Project);
+        string PublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project);
+        string InstallerOutputFolder = PublisherProjectPatterns.ResolveInstallerOutputFolder(Project);
         string LinuxIconFilePath = Resolve(Project.LinuxIconFilePath, Project);
         string WindowsIconFilePath = Resolve(Project.WindowsIconFilePath, Project);
 
@@ -63,10 +64,10 @@ static public class PublisherProjectValidator
             Add(Result, "Error", "ProjectFile.Missing", ".csproj file does not exist.", ProjectFilePath);
         if (!string.IsNullOrWhiteSpace(SolutionFolder) && !Directory.Exists(SolutionFolder))
             Add(Result, "Warning", "SolutionFolder.Missing", "Solution folder does not exist.", SolutionFolder);
-        if (string.IsNullOrWhiteSpace(PublishRootFolder))
+        if (string.IsNullOrWhiteSpace(RawPublishRootFolder))
             Add(Result, "Error", "PublishRoot.Required", "Publish root folder is required.");
-        else if (File.Exists(PublishRootFolder))
-            Add(Result, "Error", "PublishRoot.IsFile", "Publish root folder points to an existing file, not a folder.", PublishRootFolder);
+        else if (File.Exists(RawPublishRootFolder))
+            Add(Result, "Error", "PublishRoot.IsFile", "Publish root folder points to an existing file, not a folder.", RawPublishRootFolder);
         if (!string.IsNullOrWhiteSpace(InstallerOutputFolder) && !Directory.Exists(InstallerOutputFolder))
         {
             if (File.Exists(InstallerOutputFolder))

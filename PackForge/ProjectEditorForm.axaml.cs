@@ -260,8 +260,8 @@ public partial class ProjectEditorForm : AppForm
     string Resolve(string Text) => PublisherProjectPatterns.Resolve(Text, fProject);
     string QuoteArg(string Text) => "\"" + (Text ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     string QuotePathArg(string Text) => "\"" + (Text ?? string.Empty).Replace("\"", "\\\"") + "\"";
-    string GetPublishRootFolder() => Resolve(fProject.PublishRootFolder);
-    string GetInstallerOutputFolder() => Resolve(fProject.InstallerOutputFolderOrFallback);
+    string GetPublishRootFolder() => PublisherProjectPatterns.ResolvePublishRootFolder(fProject);
+    string GetInstallerOutputFolder() => PublisherProjectPatterns.ResolveInstallerOutputFolder(fProject);
     string GetPublishOutputFolder(DotNetPublishSettings Settings) => Path.Combine(GetPublishRootFolder(), Resolve(Settings.OutputFolderName));
     string GetDebScriptFilePath() => Path.Combine(GetPublishRootFolder(), Resolve(fProject.Deb.ScriptFileName));
     string GetInnoScriptFilePath() => Path.Combine(GetPublishRootFolder(), Resolve(fProject.Inno.ScriptFileName));
@@ -357,8 +357,7 @@ public partial class ProjectEditorForm : AppForm
         if (fIsBusy)
             return;
 
-        BusyDialog Dialog = new(Message);
-        Task DialogTask = Dialog.ShowDialog(AppHost.MainWindow);
+        PleaseWaitDialog Dialog = Ui.PleaseWait(Message, AppHost.MainWindow);
         Exception Error = null;
 
         try
@@ -376,7 +375,6 @@ public partial class ProjectEditorForm : AppForm
         {
             SetBusy(false);
             Dialog.CloseDialog();
-            await DialogTask;
         }
 
         if (Error != null)

@@ -37,4 +37,34 @@ static public class PublisherProjectPatterns
     {
         return ReplaceCore(Text, Project, 0);
     }
+    /// <summary>
+    /// Resolves the versioned publish root folder for a project.
+    /// </summary>
+    static public string ResolvePublishRootFolder(PublisherProjectSettings Project)
+    {
+        if (Project == null)
+            return string.Empty;
+
+        string PublishRootFolder = Resolve(Project.PublishRootFolder, Project);
+        if (string.IsNullOrWhiteSpace(PublishRootFolder))
+            return string.Empty;
+        string Version = Sys.StrToValidFileName(Resolve(Project.Version, Project));
+        return string.IsNullOrWhiteSpace(Version) ? PublishRootFolder : Path.Combine(PublishRootFolder, Version);
+    }
+    /// <summary>
+    /// Resolves the installer output folder for a project.
+    /// </summary>
+    static public string ResolveInstallerOutputFolder(PublisherProjectSettings Project)
+    {
+        if (Project == null)
+            return string.Empty;
+
+        string PublishRootFolder = ResolvePublishRootFolder(Project);
+        string InstallerOutputFolder = Resolve(Project.InstallerOutputFolder, Project);
+        if (string.IsNullOrWhiteSpace(InstallerOutputFolder))
+            return PublishRootFolder;
+        if (Path.IsPathRooted(InstallerOutputFolder))
+            return InstallerOutputFolder;
+        return Path.Combine(PublishRootFolder, InstallerOutputFolder);
+    }
 }
