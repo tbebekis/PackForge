@@ -59,11 +59,6 @@ public class PublisherProjectSettings
     /// Gets or sets the publish root folder.
     /// </summary>
     public string PublishRootFolder { get; set; } = string.Empty;
-    /// <summary>
-    /// Gets or sets the installer output folder.
-    /// </summary>
-    public string InstallerOutputFolder { get; set; } = string.Empty;
-    /// <summary>
     /// Gets or sets the legacy icon file path.
     /// </summary>
     public string IconFilePath { get; set; } = string.Empty;
@@ -71,11 +66,6 @@ public class PublisherProjectSettings
     /// Gets or sets the Linux PNG icon file path.
     /// </summary>
     public string LinuxIconFilePath { get; set; } = string.Empty;
-    /// <summary>
-    /// Gets or sets the Windows ICO icon file path.
-    /// </summary>
-    public string WindowsIconFilePath { get; set; } = string.Empty;
-    /// <summary>
     /// Gets or sets the Linux dotnet publish settings.
     /// </summary>
     public DotNetPublishSettings LinuxPublish { get; set; } = new() { RuntimeIdentifier = "linux-x64" };
@@ -100,11 +90,6 @@ public class PublisherProjectSettings
     /// </summary>
     [JsonIgnore]
     public string StoredName { get; set; } = string.Empty;
-    /// <summary>
-    /// Gets the installer output folder, falling back to the publish root folder when empty.
-    /// </summary>
-    [JsonIgnore]
-    public string InstallerOutputFolderOrFallback => string.IsNullOrWhiteSpace(InstallerOutputFolder) ? PublishRootFolder : InstallerOutputFolder;
 }
 
 /// <summary>
@@ -117,6 +102,10 @@ public class DotNetPublishSettings
     /// Gets or sets a value indicating whether this publish target is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
+    /// <summary>
+    /// Gets or sets the publish root folder.
+    /// </summary>
+    public string PublishRootFolder { get; set; } = string.Empty;
     /// <summary>
     /// Gets or sets the .NET runtime identifier.
     /// </summary>
@@ -157,6 +146,14 @@ public class DebPackageSettings
     /// Gets or sets a value indicating whether Debian package generation is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
+    /// <summary>
+    /// Gets or sets the Linux source folder used by Debian package generation.
+    /// </summary>
+    public string LinuxSourceFolder { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the Debian build output folder.
+    /// </summary>
+    public string BuildOutputFolder { get; set; } = string.Empty;
     /// <summary>
     /// Gets or sets the Debian architecture.
     /// </summary>
@@ -214,6 +211,14 @@ public class InnoSetupSettings
     /// </summary>
     public bool IsEnabled { get; set; } = true;
     /// <summary>
+    /// Gets or sets the Windows source folder used by Inno Setup generation.
+    /// </summary>
+    public string WindowsSourceFolder { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the Inno Setup build output folder.
+    /// </summary>
+    public string BuildOutputFolder { get; set; } = string.Empty;
+    /// <summary>
     /// Gets or sets the generated Inno Setup script file name.
     /// </summary>
     public string ScriptFileName { get; set; } = string.Empty;
@@ -237,11 +242,6 @@ public class InnoSetupSettings
     /// Gets or sets the Windows executable file name.
     /// </summary>
     public string AppExeName { get; set; } = string.Empty;
-    /// <summary>
-    /// Gets or sets the Windows publish folder name.
-    /// </summary>
-    public string WindowsPublishFolderName { get; set; } = string.Empty;
-    /// <summary>
     /// Gets or sets the setup output base file name.
     /// </summary>
     public string OutputBaseFilename { get; set; } = string.Empty;

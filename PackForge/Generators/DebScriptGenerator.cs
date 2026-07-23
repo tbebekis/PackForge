@@ -9,7 +9,7 @@ namespace PackForge;
 static public class DebScriptGenerator
 {
     // ● private
-    static string R(PublisherProjectSettings Project, string Text) => PublisherProjectPatterns.Resolve(Text, Project);
+    static string R(PublisherProjectSettings Project, string Text) => PublisherProjectPatterns.ResolveBuild(Text, Project);
     static string Q(string Text) => "'" + (Text ?? string.Empty).Replace("'", "'\"'\"'") + "'";
     static string DebDescription(string Text)
     {
@@ -58,11 +58,11 @@ static public class DebScriptGenerator
         if (!Project.Deb.IsEnabled)
             throw new Exception("Debian generation is disabled.");
 
-        string PublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project);
-        if (string.IsNullOrWhiteSpace(PublishRootFolder))
-            throw new Exception("Publish root folder is required.");
+        string PublishOutputFolder = PublisherProjectPatterns.ResolvePublishOutputFolder(Project, Project.LinuxPublish);
+        if (string.IsNullOrWhiteSpace(PublishOutputFolder))
+            throw new Exception("Linux publish output folder is required.");
 
-        EnsureFolderCanBeCreated(PublishRootFolder, "Publish root folder");
+        EnsureFolderCanBeCreated(PublishOutputFolder, "Linux publish output folder");
 
         string AppName = R(Project, Project.AppName);
         string PackageName = R(Project, Project.PackageName);
@@ -71,16 +71,16 @@ static public class DebScriptGenerator
         string ExecutableName = R(Project, Project.Deb.ExecutableName);
         string CommandName = R(Project, Project.Deb.CommandName);
         string InstallDir = R(Project, Project.Deb.InstallDir);
-        string LinuxPublishFolder = Path.Combine(PublishRootFolder, R(Project, Project.LinuxPublish.OutputFolderName));
-        string InstallerOutputFolder = PublisherProjectPatterns.ResolveInstallerOutputFolder(Project);
         string ScriptFileName = R(Project, Project.Deb.ScriptFileName);
         string IconFilePath = R(Project, Project.LinuxIconFilePath);
         string OutputFileName = R(Project, Project.Deb.OutputFileNamePattern);
-        string ScriptFilePath = Path.Combine(PublishRootFolder, ScriptFileName);
+        string BuildOutputFolder = R(Project, Project.Deb.BuildOutputFolder);
+        if (string.IsNullOrWhiteSpace(BuildOutputFolder))
+            BuildOutputFolder = "Output";
+        string ScriptFilePath = Path.Combine(PublishOutputFolder, ScriptFileName);
 
         if (string.IsNullOrWhiteSpace(ScriptFileName))
             throw new Exception("Debian script file name is required.");
-        EnsureFolderCanBeCreated(InstallerOutputFolder, "Installer output folder");
 
         StringBuilder Builder = new();
         Builder.AppendLine("#!/usr/bin/env bash");
@@ -92,6 +92,7 @@ static public class DebScriptGenerator
         Builder.AppendLine("ARCHITECTURE=" + Q(Architecture));
         Builder.AppendLine("EXECUTABLE_NAME=" + Q(ExecutableName));
         Builder.AppendLine("COMMAND_NAME=" + Q(CommandName));
+        Builder.AppendLine("SCRIPT_FILE_NAME=" + Q(ScriptFileName));
         Builder.AppendLine("MAINTAINER=" + Q(R(Project, Project.Maintainer)));
         Builder.AppendLine("HOMEPAGE=" + Q(R(Project, Project.Homepage)));
         Builder.AppendLine("DESCRIPTION_SHORT=" + Q(R(Project, Project.DescriptionShort)));
@@ -101,18 +102,20 @@ static public class DebScriptGenerator
         Builder.AppendLine("PRIORITY=" + Q(R(Project, Project.Deb.Priority)));
         Builder.AppendLine("DESKTOP_CATEGORIES=" + Q(R(Project, Project.Deb.DesktopCategories)));
         Builder.AppendLine("DESKTOP_KEYWORDS=" + Q(R(Project, Project.Deb.DesktopKeywords)));
-        Builder.AppendLine("PUBLISH_DIR=" + Q(LinuxPublishFolder));
+        Builder.AppendLine("SOURCE_DIR=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"");
         Builder.AppendLine("ICON_FILE=" + Q(IconFilePath));
-        Builder.AppendLine("OUTPUT_DIR=" + Q(InstallerOutputFolder));
+        Builder.AppendLine("OUTPUT_DIR=" + Q(BuildOutputFolder));
         Builder.AppendLine("OUTPUT_FILE_NAME=" + Q(OutputFileName));
-        Builder.AppendLine("BUILD_ROOT=" + Q(Path.Combine(PublishRootFolder, "DebBuild")));
         Builder.AppendLine();
         Builder.AppendLine("command -v dpkg-deb >/dev/null 2>&1 || { echo \"dpkg-deb is required.\" >&2; exit 1; }");
-        Builder.AppendLine("[ -d \"$PUBLISH_DIR\" ] || { echo \"Publish folder not found: $PUBLISH_DIR\" >&2; exit 1; }");
-        Builder.AppendLine("[ -f \"$PUBLISH_DIR/$EXECUTABLE_NAME\" ] || { echo \"Executable not found: $PUBLISH_DIR/$EXECUTABLE_NAME\" >&2; exit 1; }");
+        Builder.AppendLine("[ -d \"$SOURCE_DIR\" ] || { echo \"Source folder not found: $SOURCE_DIR\" >&2; exit 1; }");
+        Builder.AppendLine("[ -f \"$SOURCE_DIR/$EXECUTABLE_NAME\" ] || { echo \"Executable not found: $SOURCE_DIR/$EXECUTABLE_NAME\" >&2; exit 1; }");
+        Builder.AppendLine("if [ -n \"$ICON_FILE\" ] && [[ \"$ICON_FILE\" != /* ]]; then ICON_FILE=\"$SOURCE_DIR/$ICON_FILE\"; fi");
+        Builder.AppendLine("if [[ \"$OUTPUT_DIR\" != /* ]]; then OUTPUT_DIR=\"$SOURCE_DIR/$OUTPUT_DIR\"; fi");
         Builder.AppendLine("if [ -n \"$ICON_FILE\" ] && [ ! -f \"$ICON_FILE\" ]; then echo \"Icon file not found: $ICON_FILE\" >&2; exit 1; fi");
         Builder.AppendLine();
-        Builder.AppendLine("rm -rf \"$BUILD_ROOT\"");
+        Builder.AppendLine("BUILD_ROOT=$(mktemp -d)");
+        Builder.AppendLine("trap 'rm -rf \"$BUILD_ROOT\"' EXIT");
         Builder.AppendLine("mkdir -p \"$BUILD_ROOT/DEBIAN\"");
         Builder.AppendLine("mkdir -p \"$BUILD_ROOT$INSTALL_DIR\"");
         Builder.AppendLine("mkdir -p \"$BUILD_ROOT/usr/bin\"");
@@ -120,7 +123,14 @@ static public class DebScriptGenerator
         Builder.AppendLine("mkdir -p \"$BUILD_ROOT/usr/share/icons/hicolor/512x512/apps\"");
         Builder.AppendLine("mkdir -p \"$OUTPUT_DIR\"");
         Builder.AppendLine();
-        Builder.AppendLine("cp -a \"$PUBLISH_DIR/.\" \"$BUILD_ROOT$INSTALL_DIR/\"");
+        Builder.AppendLine("shopt -s dotglob nullglob");
+        Builder.AppendLine("for ITEM in \"$SOURCE_DIR\"/*; do");
+        Builder.AppendLine("  BASE_NAME=$(basename \"$ITEM\")");
+        Builder.AppendLine("  case \"$BASE_NAME\" in");
+        Builder.AppendLine("    \"$SCRIPT_FILE_NAME\"|\"$OUTPUT_FILE_NAME\"|*.deb|*.tar.gz|*.zip) continue ;;");
+        Builder.AppendLine("  esac");
+        Builder.AppendLine("  cp -a \"$ITEM\" \"$BUILD_ROOT$INSTALL_DIR/\"");
+        Builder.AppendLine("done");
         Builder.AppendLine("chmod +x \"$BUILD_ROOT$INSTALL_DIR/$EXECUTABLE_NAME\"");
         Builder.AppendLine();
         Builder.AppendLine("cat > \"$BUILD_ROOT/usr/bin/$COMMAND_NAME\" <<EOF");

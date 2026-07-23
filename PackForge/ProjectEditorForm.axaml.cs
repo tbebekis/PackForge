@@ -20,7 +20,26 @@ public partial class ProjectEditorForm : AppForm
     Button btnBuildInno;
     Button btnOpenOutputFolder;
     Button btnClose;
+    Tripous.Desktop.ToolBar VariablesToolBar;
+    Button btnRefreshVariables;
+    ObservableCollection<VariableRow> fVariableRows = new();
     bool fIsBusy;
+
+    // ● private types
+    /// <summary>
+    /// Represents a resolved variable row.
+    /// </summary>
+    class VariableRow
+    {
+        /// <summary>
+        /// Gets or sets the variable name.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the resolved variable value.
+        /// </summary>
+        public string Value { get; set; } = string.Empty;
+    }
 
     // ● private
     string TextOf(TextBox Edit) => Edit.Text ?? string.Empty;
@@ -83,6 +102,47 @@ public partial class ProjectEditorForm : AppForm
             return "All Users";
         return "User only";
     }
+    string ReadProjectVersion(string ProjectFilePath)
+    {
+        if (string.IsNullOrWhiteSpace(ProjectFilePath) || !File.Exists(ProjectFilePath))
+            return string.Empty;
+
+        try
+        {
+            System.Xml.Linq.XDocument Doc = System.Xml.Linq.XDocument.Load(ProjectFilePath);
+            string Result = Doc.Descendants()
+                .Where(x => x.Name.LocalName == "Version")
+                .Select(x => x.Value?.Trim() ?? string.Empty)
+                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+            if (!string.IsNullOrWhiteSpace(Result))
+                return Result;
+            return Doc.Descendants()
+                .Where(x => x.Name.LocalName == "VersionPrefix")
+                .Select(x => x.Value?.Trim() ?? string.Empty)
+                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+    async Task NotifyCsprojVersionMismatch()
+    {
+        string ProjectFilePath = Resolve(fProject.ProjectFilePath);
+        string CsprojVersion = ReadProjectVersion(ProjectFilePath);
+        string ProjectVersion = Resolve(fProject.Version);
+
+        if (string.IsNullOrWhiteSpace(CsprojVersion) || CsprojVersion.IsSameText(ProjectVersion))
+            return;
+
+        await MessageBox.Info(
+            "Project saved, but the PackForge version is different from the .csproj version."
+            + Environment.NewLine + Environment.NewLine
+            + "PackForge version: " + ProjectVersion
+            + Environment.NewLine
+            + ".csproj version: " + CsprojVersion,
+            this);
+    }
     void CreateToolBar()
     {
         if (ToolBar == null)
@@ -104,6 +164,63 @@ public partial class ProjectEditorForm : AppForm
             btnClose = ToolBar.AddButton("door_out.png", "Close", AnyClick);
         }
     }
+    void CreateVariablesToolBar()
+    {
+        if (VariablesToolBar == null)
+        {
+            VariablesToolBar = new();
+            VariablesToolBar.Panel = pnlVariablesToolBar;
+            btnRefreshVariables = VariablesToolBar.AddButton("table_refresh.png", "Refresh Variables", AnyClick);
+        }
+    }
+    void CreateVariablesGrid()
+    {
+        gridVariables.AutoGenerateColumns = false;
+        gridVariables.IsReadOnly = true;
+        gridVariables.IsToolBarVisible = false;
+        gridVariables.IsGroupPanelVisible = false;
+        gridVariables.IsColumnHeadersVisible = true;
+        gridVariables.IsFilterPanelVisible = false;
+        gridVariables.IsTotalsSummaryVisible = false;
+        gridVariables.IsColumnManagerMenuItemVisible = false;
+        gridVariables.IsSettingsMenuItemsVisible = false;
+        gridVariables.IsSummaryContextMenuVisible = false;
+        gridVariables.IsColumnContextMenuEnabled = false;
+        gridVariables.IsSummaryContextMenuEnabled = false;
+        gridVariables.IsGridContextMenuEnabled = false;
+        gridVariables.Columns.Clear();
+        gridVariables.Columns.Add(new GroupGridTextColumn { Name = nameof(VariableRow.Name), Header = "Name", Width = 150, IsReadOnly = true, CanUserResize = true });
+        gridVariables.Columns.Add(new GroupGridTextColumn { Name = nameof(VariableRow.Value), Header = "Value", Width = 520, IsReadOnly = true, CanUserResize = true });
+        gridVariables.ItemsSource = fVariableRows;
+    }
+    void AddVariable(string Name, string Value)
+    {
+        fVariableRows.Add(new VariableRow { Name = Name, Value = Value ?? string.Empty });
+    }
+    void RefreshVariables()
+    {
+        SaveToProject(fProject);
+        fVariableRows.Clear();
+
+        AddVariable("{ProjectName}", PublisherProjectPatterns.ResolveBuild("{ProjectName}", fProject));
+        AddVariable("{PackageName}", PublisherProjectPatterns.ResolveBuild("{PackageName}", fProject));
+        AddVariable("{AppName}", PublisherProjectPatterns.ResolveBuild("{AppName}", fProject));
+        AddVariable("{Version}", PublisherProjectPatterns.ResolveBuild("{Version}", fProject));
+        AddVariable("{Architecture}", PublisherProjectPatterns.ResolveBuild("{Architecture}", fProject));
+        AddVariable("{PublishRootFolder} Linux publish", PublisherProjectPatterns.ResolvePublishRootFolder(fProject, fProject.LinuxPublish));
+        AddVariable("{PublishRootFolder} Windows publish", PublisherProjectPatterns.ResolvePublishRootFolder(fProject, fProject.WindowsPublish));
+        AddVariable("Linux publish output", GetPublishOutputFolder(fProject.LinuxPublish));
+        AddVariable("Windows publish output", GetPublishOutputFolder(fProject.WindowsPublish));
+        AddVariable("Debian build source folder", PublisherProjectPatterns.ResolveLinuxSourceFolder(fProject));
+        AddVariable("Inno Setup build source folder", PublisherProjectPatterns.ResolveWindowsSourceFolder(fProject));
+        AddVariable("Debian build output folder", PublisherProjectPatterns.ResolveDebBuildOutputFolder(fProject));
+        AddVariable("Inno Setup build output folder", PublisherProjectPatterns.ResolveInnoBuildOutputFolder(fProject));
+        AddVariable("Debian generated script file", GetGeneratedDebScriptFilePath());
+        AddVariable("Debian build script file", GetDebScriptFilePath());
+        AddVariable("Inno Setup generated script file", GetGeneratedInnoScriptFilePath());
+        AddVariable("Inno Setup build script file", GetInnoScriptFilePath());
+        gridVariables.BestFitColumns();
+    }
     void LoadProject(PublisherProjectSettings Project)
     {
         if (Project == null)
@@ -122,14 +239,12 @@ public partial class ProjectEditorForm : AppForm
         SetText(edtDescriptionLong, Project.DescriptionLong);
         SetText(edtSolutionFolder, Project.SolutionFolder);
         SetText(edtProjectFilePath, Project.ProjectFilePath);
-        SetText(edtPublishRootFolder, Project.PublishRootFolder);
-        SetText(edtInstallerOutputFolder, Project.InstallerOutputFolder);
         SetText(edtLinuxIconFilePath, Project.LinuxIconFilePath);
-        SetText(edtWindowsIconFilePath, Project.WindowsIconFilePath);
 
         chkLinuxEnabled.IsChecked = Project.LinuxPublish.IsEnabled;
         SetText(cboLinuxConfiguration, Project.LinuxPublish.Configuration);
         SetText(cboLinuxRuntime, Project.LinuxPublish.RuntimeIdentifier);
+        SetText(edtLinuxPublishRootFolder, Project.LinuxPublish.PublishRootFolder);
         SetText(edtLinuxOutput, Project.LinuxPublish.OutputFolderName);
         SetText(edtLinuxExtra, Project.LinuxPublish.ExtraArguments);
         chkLinuxSelfContained.IsChecked = Project.LinuxPublish.SelfContained;
@@ -139,6 +254,7 @@ public partial class ProjectEditorForm : AppForm
         chkWindowsEnabled.IsChecked = Project.WindowsPublish.IsEnabled;
         SetText(cboWindowsConfiguration, Project.WindowsPublish.Configuration);
         SetText(cboWindowsRuntime, Project.WindowsPublish.RuntimeIdentifier);
+        SetText(edtWindowsPublishRootFolder, Project.WindowsPublish.PublishRootFolder);
         SetText(edtWindowsOutput, Project.WindowsPublish.OutputFolderName);
         SetText(edtWindowsExtra, Project.WindowsPublish.ExtraArguments);
         chkWindowsSelfContained.IsChecked = Project.WindowsPublish.SelfContained;
@@ -148,6 +264,8 @@ public partial class ProjectEditorForm : AppForm
         chkDebEnabled.IsChecked = Project.Deb.IsEnabled;
         SetText(cboDebArchitecture, Project.Deb.Architecture);
         SetText(edtDebExecutable, Project.Deb.ExecutableName);
+        SetText(edtDebLinuxSourceFolder, Project.Deb.LinuxSourceFolder);
+        SetText(edtDebBuildOutputFolder, Project.Deb.BuildOutputFolder);
         SetText(edtDebCommand, Project.Deb.CommandName);
         SetText(edtDebCategories, Project.Deb.DesktopCategories);
         SetText(edtDebKeywords, Project.Deb.DesktopKeywords);
@@ -164,7 +282,8 @@ public partial class ProjectEditorForm : AppForm
         SetText(edtInnoPublisher, Project.Inno.AppPublisher);
         SetText(edtInnoPublisherUrl, Project.Inno.AppPublisherUrl);
         SetText(edtInnoAppExe, Project.Inno.AppExeName);
-        SetText(edtInnoWindowsPublish, Project.Inno.WindowsPublishFolderName);
+        SetText(edtInnoWindowsSourceFolder, Project.Inno.WindowsSourceFolder);
+        SetText(edtInnoBuildOutputFolder, Project.Inno.BuildOutputFolder);
         SetText(edtInnoOutputBase, Project.Inno.OutputBaseFilename);
         SetText(cboInnoInstallScope, GetInstallScope(Project.Inno));
         SetText(edtInnoDefaultGroup, Project.Inno.DefaultGroupName);
@@ -178,6 +297,7 @@ public partial class ProjectEditorForm : AppForm
         SetText(edtInnoUpdatesUrl, Project.Inno.AppUpdatesUrl);
         SetText(lboInnoArchitecturesAllowed, Project.Inno.ArchitecturesAllowed);
         SetText(lboInnoArchitectures64, Project.Inno.ArchitecturesInstallIn64BitMode);
+        RefreshVariables();
     }
     void SaveToProject(PublisherProjectSettings Project)
     {
@@ -194,15 +314,13 @@ public partial class ProjectEditorForm : AppForm
         Project.DescriptionLong = TextOf(edtDescriptionLong);
         Project.SolutionFolder = TextOf(edtSolutionFolder);
         Project.ProjectFilePath = TextOf(edtProjectFilePath);
-        Project.PublishRootFolder = TextOf(edtPublishRootFolder);
-        Project.InstallerOutputFolder = TextOf(edtInstallerOutputFolder);
         Project.LinuxIconFilePath = TextOf(edtLinuxIconFilePath);
-        Project.WindowsIconFilePath = TextOf(edtWindowsIconFilePath);
         Project.IconFilePath = Project.LinuxIconFilePath;
 
         Project.LinuxPublish.IsEnabled = chkLinuxEnabled.IsChecked == true;
         Project.LinuxPublish.Configuration = TextOf(cboLinuxConfiguration);
         Project.LinuxPublish.RuntimeIdentifier = TextOf(cboLinuxRuntime);
+        Project.LinuxPublish.PublishRootFolder = TextOf(edtLinuxPublishRootFolder);
         Project.LinuxPublish.OutputFolderName = TextOf(edtLinuxOutput);
         Project.LinuxPublish.ExtraArguments = TextOf(edtLinuxExtra);
         Project.LinuxPublish.SelfContained = chkLinuxSelfContained.IsChecked == true;
@@ -212,6 +330,7 @@ public partial class ProjectEditorForm : AppForm
         Project.WindowsPublish.IsEnabled = chkWindowsEnabled.IsChecked == true;
         Project.WindowsPublish.Configuration = TextOf(cboWindowsConfiguration);
         Project.WindowsPublish.RuntimeIdentifier = TextOf(cboWindowsRuntime);
+        Project.WindowsPublish.PublishRootFolder = TextOf(edtWindowsPublishRootFolder);
         Project.WindowsPublish.OutputFolderName = TextOf(edtWindowsOutput);
         Project.WindowsPublish.ExtraArguments = TextOf(edtWindowsExtra);
         Project.WindowsPublish.SelfContained = chkWindowsSelfContained.IsChecked == true;
@@ -219,6 +338,8 @@ public partial class ProjectEditorForm : AppForm
         Project.WindowsPublish.PublishTrimmed = chkWindowsTrimmed.IsChecked == true;
 
         Project.Deb.IsEnabled = chkDebEnabled.IsChecked == true;
+        Project.Deb.LinuxSourceFolder = TextOf(edtDebLinuxSourceFolder);
+        Project.Deb.BuildOutputFolder = TextOf(edtDebBuildOutputFolder);
         Project.Deb.Architecture = TextOf(cboDebArchitecture);
         Project.Deb.ExecutableName = TextOf(edtDebExecutable);
         Project.Deb.CommandName = TextOf(edtDebCommand);
@@ -233,11 +354,12 @@ public partial class ProjectEditorForm : AppForm
 
         Project.Inno.IsEnabled = chkInnoEnabled.IsChecked == true;
         Project.AppId = TextOf(edtAppId);
+        Project.Inno.WindowsSourceFolder = TextOf(edtInnoWindowsSourceFolder);
+        Project.Inno.BuildOutputFolder = TextOf(edtInnoBuildOutputFolder);
         Project.Inno.ScriptFileName = TextOf(edtInnoScriptFile);
         Project.Inno.AppPublisher = TextOf(edtInnoPublisher);
         Project.Inno.AppPublisherUrl = TextOf(edtInnoPublisherUrl);
         Project.Inno.AppExeName = TextOf(edtInnoAppExe);
-        Project.Inno.WindowsPublishFolderName = TextOf(edtInnoWindowsPublish);
         Project.Inno.OutputBaseFilename = TextOf(edtInnoOutputBase);
         Project.Inno.InstallScope = TextOf(cboInnoInstallScope);
         Project.Inno.DefaultDirName = GetDefaultDirName(Project.Inno.InstallScope);
@@ -252,19 +374,35 @@ public partial class ProjectEditorForm : AppForm
         Project.Inno.AppUpdatesUrl = TextOf(edtInnoUpdatesUrl);
         Project.Inno.ArchitecturesAllowed = TextOf(lboInnoArchitecturesAllowed);
         Project.Inno.ArchitecturesInstallIn64BitMode = TextOf(lboInnoArchitectures64);
+
     }
     void Clear()
     {
         LoadProject(new PublisherProjectSettings());
     }
     string Resolve(string Text) => PublisherProjectPatterns.Resolve(Text, fProject);
+    string Resolve(string Text, DotNetPublishSettings Settings) => PublisherProjectPatterns.Resolve(Text, fProject, Settings);
     string QuoteArg(string Text) => "\"" + (Text ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     string QuotePathArg(string Text) => "\"" + (Text ?? string.Empty).Replace("\"", "\\\"") + "\"";
-    string GetPublishRootFolder() => PublisherProjectPatterns.ResolvePublishRootFolder(fProject);
-    string GetInstallerOutputFolder() => PublisherProjectPatterns.ResolveInstallerOutputFolder(fProject);
-    string GetPublishOutputFolder(DotNetPublishSettings Settings) => Path.Combine(GetPublishRootFolder(), Resolve(Settings.OutputFolderName));
-    string GetDebScriptFilePath() => Path.Combine(GetPublishRootFolder(), Resolve(fProject.Deb.ScriptFileName));
-    string GetInnoScriptFilePath() => Path.Combine(GetPublishRootFolder(), Resolve(fProject.Inno.ScriptFileName));
+    string CombinePathText(string Folder, string Name)
+    {
+        Folder = Folder ?? string.Empty;
+        Name = Name ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(Folder) || Path.IsPathRooted(Name))
+            return Name;
+        if (string.IsNullOrWhiteSpace(Name))
+            return Folder;
+
+        bool IsWindowsPath = Folder.Contains('\\') || Regex.IsMatch(Folder, "^[A-Za-z]:");
+        char Separator = IsWindowsPath ? '\\' : Path.DirectorySeparatorChar;
+        return Folder.TrimEnd('\\', '/') + Separator + Name.TrimStart('\\', '/');
+    }
+    string GetPublishRootFolder(DotNetPublishSettings Settings) => PublisherProjectPatterns.ResolvePublishRootFolder(fProject, Settings);
+    string GetPublishOutputFolder(DotNetPublishSettings Settings) => PublisherProjectPatterns.ResolvePublishOutputFolder(fProject, Settings);
+    string GetGeneratedDebScriptFilePath() => Path.Combine(GetPublishOutputFolder(fProject.LinuxPublish), PublisherProjectPatterns.ResolveBuild(fProject.Deb.ScriptFileName, fProject));
+    string GetGeneratedInnoScriptFilePath() => Path.Combine(GetPublishOutputFolder(fProject.WindowsPublish), PublisherProjectPatterns.ResolveBuild(fProject.Inno.ScriptFileName, fProject));
+    string GetDebScriptFilePath() => CombinePathText(PublisherProjectPatterns.ResolveLinuxSourceFolder(fProject), PublisherProjectPatterns.ResolveBuild(fProject.Deb.ScriptFileName, fProject));
+    string GetInnoScriptFilePath() => CombinePathText(PublisherProjectPatterns.ResolveWindowsSourceFolder(fProject), PublisherProjectPatterns.ResolveBuild(fProject.Inno.ScriptFileName, fProject));
     void EnsureFolderCanBeCreated(string FolderPath, string FieldTitle)
     {
         if (string.IsNullOrWhiteSpace(FolderPath))
@@ -272,6 +410,10 @@ public partial class ProjectEditorForm : AppForm
         if (File.Exists(FolderPath))
             throw new Exception(FieldTitle + " points to an existing file, not a folder." + Environment.NewLine + FolderPath);
         Directory.CreateDirectory(FolderPath);
+    }
+    void ShowDoneNote(string Message)
+    {
+        Ui.InfoNote(Message);
     }
     string CreateDotNetPublishArguments(DotNetPublishSettings Settings)
     {
@@ -281,9 +423,9 @@ public partial class ProjectEditorForm : AppForm
             "publish",
             QuoteArg(Resolve(fProject.ProjectFilePath)),
             "-c",
-            QuoteArg(Resolve(Settings.Configuration)),
+            QuoteArg(Resolve(Settings.Configuration, Settings)),
             "-r",
-            QuoteArg(Resolve(Settings.RuntimeIdentifier)),
+            QuoteArg(Resolve(Settings.RuntimeIdentifier, Settings)),
             "--self-contained",
             Settings.SelfContained ? "true" : "false",
             "-p:PublishSingleFile=" + (Settings.PublishSingleFile ? "true" : "false"),
@@ -292,7 +434,7 @@ public partial class ProjectEditorForm : AppForm
             QuoteArg(OutputFolder)
         };
 
-        string ExtraArguments = Resolve(Settings.ExtraArguments);
+        string ExtraArguments = Resolve(Settings.ExtraArguments, Settings);
         if (!string.IsNullOrWhiteSpace(ExtraArguments))
             Args.Add(ExtraArguments);
 
@@ -306,8 +448,8 @@ public partial class ProjectEditorForm : AppForm
     void CreateWindowsZip()
     {
         string SourceFolder = GetPublishOutputFolder(fProject.WindowsPublish);
-        string OutputFolder = GetInstallerOutputFolder();
-        EnsureFolderCanBeCreated(OutputFolder, "Installer output folder");
+        string OutputFolder = GetPublishRootFolder(fProject.WindowsPublish);
+        EnsureFolderCanBeCreated(OutputFolder, "Windows publish root folder");
         string ZipFilePath = Path.Combine(OutputFolder, CreateArtifactBaseName("windows") + ".zip");
 
         if (File.Exists(ZipFilePath))
@@ -319,8 +461,8 @@ public partial class ProjectEditorForm : AppForm
     void CreateLinuxTarGz()
     {
         string SourceFolder = GetPublishOutputFolder(fProject.LinuxPublish);
-        string OutputFolder = GetInstallerOutputFolder();
-        EnsureFolderCanBeCreated(OutputFolder, "Installer output folder");
+        string OutputFolder = GetPublishRootFolder(fProject.LinuxPublish);
+        EnsureFolderCanBeCreated(OutputFolder, "Linux publish root folder");
         string TarGzFilePath = Path.Combine(OutputFolder, CreateArtifactBaseName("linux") + ".tar.gz");
 
         if (File.Exists(TarGzFilePath))
@@ -387,7 +529,7 @@ public partial class ProjectEditorForm : AppForm
 
         SaveToProject(fProject);
         AppHost.SaveProject(fProject);
-        EnsureFolderCanBeCreated(GetPublishRootFolder(), "Publish root folder");
+        EnsureFolderCanBeCreated(GetPublishRootFolder(Settings), "Publish root folder");
 
         ProcessRunner Runner = new();
         ProcessRunResult Result = await Runner.RunAsync("dotnet", CreateDotNetPublishArguments(Settings), GetWorkingDirectory());
@@ -420,10 +562,10 @@ public partial class ProjectEditorForm : AppForm
 
         string ScriptFilePath = GetDebScriptFilePath();
         if (!File.Exists(ScriptFilePath))
-            ScriptFilePath = DebScriptGenerator.Generate(fProject);
+            throw new Exception("Debian build script was not found in the Linux source folder." + Environment.NewLine + ScriptFilePath);
 
         ProcessRunner Runner = new();
-        ProcessRunResult Result = await Runner.RunAsync("bash", QuoteArg(ScriptFilePath), GetPublishRootFolder());
+        ProcessRunResult Result = await Runner.RunAsync("bash", QuoteArg(ScriptFilePath), PublisherProjectPatterns.ResolveLinuxSourceFolder(fProject));
         if (Result.ExitCode != 0)
             throw new Exception("Build Deb failed. Exit code: " + Result.ExitCode.ToString(CultureInfo.InvariantCulture));
     }
@@ -441,18 +583,23 @@ public partial class ProjectEditorForm : AppForm
 
         string ScriptFilePath = GetInnoScriptFilePath();
         if (!File.Exists(ScriptFilePath))
-            ScriptFilePath = InnoSetupScriptGenerator.Generate(fProject);
+            throw new Exception("Inno Setup script was not found in the Windows source folder." + Environment.NewLine + ScriptFilePath);
 
+        EnsureFolderCanBeCreated(PublisherProjectPatterns.ResolveInnoBuildOutputFolder(fProject), "Inno Setup build output folder");
         ProcessRunner Runner = new();
-        ProcessRunResult Result = await Runner.RunAsync(CompilerPath, QuotePathArg(ScriptFilePath), GetPublishRootFolder());
+        ProcessRunResult Result = await Runner.RunAsync(CompilerPath, QuotePathArg(ScriptFilePath), PublisherProjectPatterns.ResolveWindowsSourceFolder(fProject));
         if (Result.ExitCode != 0)
             throw new Exception("Build Inno failed. Exit code: " + Result.ExitCode.ToString(CultureInfo.InvariantCulture));
     }
     void OpenOutputFolder()
     {
-        string Folder = GetInstallerOutputFolder();
+        string Folder = PublisherProjectPatterns.ResolveDebBuildOutputFolder(fProject);
         if (string.IsNullOrWhiteSpace(Folder))
-            Folder = GetPublishRootFolder();
+            Folder = PublisherProjectPatterns.ResolveInnoBuildOutputFolder(fProject);
+        if (string.IsNullOrWhiteSpace(Folder))
+            Folder = GetPublishRootFolder(fProject.LinuxPublish);
+        if (string.IsNullOrWhiteSpace(Folder))
+            Folder = GetPublishRootFolder(fProject.WindowsPublish);
         EnsureFolderCanBeCreated(Folder, "Output folder");
         Sys.OpenFileExplorer(Folder);
     }
@@ -461,21 +608,41 @@ public partial class ProjectEditorForm : AppForm
         try
         {
             if (Sender == btnSave)
-                Save();
+                await Save();
             else if (Sender == btnPublishLinux)
+            {
                 await RunBusy("Publishing Linux output. Please wait...", async () => await Publish(fProject.LinuxPublish, "Publish Linux"));
+                ShowDoneNote("Publish Linux completed.");
+            }
             else if (Sender == btnPublishWindows)
+            {
                 await RunBusy("Publishing Windows output. Please wait...", async () => await Publish(fProject.WindowsPublish, "Publish Windows"));
+                ShowDoneNote("Publish Windows completed.");
+            }
             else if (Sender == btnGenerateDebScript)
+            {
                 GenerateDebScript();
+                ShowDoneNote("Debian script generated.");
+            }
             else if (Sender == btnGenerateInnoScript)
+            {
                 GenerateInnoScript();
+                ShowDoneNote("Inno Setup script generated.");
+            }
             else if (Sender == btnBuildDeb)
+            {
                 await RunBusy("Building Debian package. Please wait...", BuildDeb);
+                ShowDoneNote("Debian package build completed.");
+            }
             else if (Sender == btnBuildInno)
+            {
                 await RunBusy("Building Inno Setup installer. Please wait...", BuildInno);
+                ShowDoneNote("Inno Setup build completed.");
+            }
             else if (Sender == btnOpenOutputFolder)
                 OpenOutputFolder();
+            else if (Sender == btnRefreshVariables)
+                RefreshVariables();
             else if (Sender == btnClose)
                 CloseForm();
         }
@@ -484,11 +651,14 @@ public partial class ProjectEditorForm : AppForm
             await MessageBox.Error(e.Message, this);
         }
     }
-    void Save()
+    async Task Save()
     {
         SaveToProject(fProject);
         AppHost.SaveProject(fProject);
         TitleText = fProject.Name;
+        RefreshVariables();
+        await NotifyCsprojVersionMismatch();
+        ShowDoneNote("Project saved.");
     }
     // ● protected
     /// <summary>
@@ -498,7 +668,7 @@ public partial class ProjectEditorForm : AppForm
     {
         if (e.Key == Key.S && e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            Save();
+            Ui.Post(async () => await Save());
             return true;
         }
 
@@ -520,6 +690,8 @@ public partial class ProjectEditorForm : AppForm
             throw new Exception("No project selected.");
         TitleText = fProject.Name;
         CreateToolBar();
+        CreateVariablesToolBar();
+        CreateVariablesGrid();
         LoadProject(fProject);
     }
 

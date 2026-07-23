@@ -8,13 +8,13 @@ It stores each packaging project as an editable JSON file, runs `dotnet publish`
 
 - Manage multiple packaging projects from a left sidebar.
 - Store project metadata in JSON files under the application data folder.
-- Edit general app metadata, publish settings, Debian settings, and Inno Setup settings.
+- Edit general app metadata, publish settings, Debian Build settings, and Inno Setup Build settings.
 - Run Linux and Windows `dotnet publish` profiles.
 - Create a `.tar.gz` artifact for Linux publish output.
 - Create a `.zip` artifact for Windows publish output.
-- Generate executable Debian `build-deb.sh` scripts.
+- Generate executable Debian `build-deb.sh` scripts into the Linux publish output folder.
 - Build `.deb` packages on Linux through `dpkg-deb`.
-- Generate Inno Setup `.iss` scripts for Windows installers.
+- Generate Inno Setup `.iss` scripts into the Windows publish output folder.
 - Optionally compile `.iss` scripts on Windows when `ISCC.exe` is available.
 - Configure application defaults and the Inno Setup compiler path.
 - Show process output in the application log.
@@ -36,29 +36,79 @@ Example Linux layout:
 Each project contains:
 
 - application name, package name, version, maintainer, homepage, and descriptions
-- solution folder, `.csproj` path, publish root folder, and installer output folder
+- solution folder and `.csproj` path
 - Linux and Windows publish profiles
+- Linux and Windows publish root folders
+- Debian and Inno Setup build source folders
+- Debian and Inno Setup build output folders
 - Debian package metadata
 - Inno Setup installer metadata
 - stable Inno Setup `AppId`
 
-## Generated Output
+## Workflow
 
-For a project named `MyApp`, the publish root folder can contain files like:
+PackForge separates packaging into three phases.
+
+### Publish
+
+The Publish phase runs `dotnet publish`.
+
+The publish root folder is a path on the machine running PackForge. PackForge appends the version and the target output folder name and writes the published application files there.
+
+For example, on Linux:
+
+```text
+/home/teo/Dev/CSharp/MyApp/Publish/2026.7.23/MyApp-Windows-x64/
+```
+
+The publish root folder is publish-only. Debian Build and Inno Setup Build do not use it.
+
+### Script Generation
+
+Script generation normally runs on the same machine as Publish.
+
+PackForge writes generated scripts into the matching publish output folder:
+
+- Debian script generation writes `build-deb.sh` into the Linux publish output folder.
+- Inno Setup script generation writes `MyApp.iss` into the Windows publish output folder.
+
+Generated scripts are intentionally visible and editable. PackForge is a generator and runner, not a hidden packaging system.
+
+### Build
+
+The Build phase runs the native packaging tool for the target operating system.
+
+The build uses only the build source folder:
+
+- Debian Build uses the Debian build source folder and expects the published Linux files, `build-deb.sh`, and Debian assets to be there.
+- Inno Setup Build uses the Inno Setup build source folder and expects the published Windows files, `.iss` script, setup icon, and wizard images to be there.
+
+The build writes only to the build output folder. When the build output folder is empty, PackForge uses an `Output` folder under the matching build source folder.
+
+When building for the other operating system, copy the publish output folder contents, generated script, and required assets to the target machine or VM. For example, when PackForge runs on Linux and the Windows installer must be built in a Windows VM, copy the Windows publish output folder and the generated `.iss` file to the Windows build source folder.
+
+## Output Layout
+
+For a project named `MyApp`, a Linux publish machine can create output like:
 
 ```text
 Publish/
-  MyApp-Linux-x64/
-  MyApp-Windows-x64/
-  build-deb.sh
-  MyApp.iss
-  MyApp_2026.7.23_amd64.deb
-  MyApp-2026.7.23-linux.tar.gz
-  MyApp-2026.7.23-windows.zip
-  DebBuild/
+  2026.7.23/
+    MyApp-Linux-x64/
+      MyApp
+      build-deb.sh
+      Output/
+        MyApp_2026.7.23_amd64.deb
+    MyApp-Windows-x64/
+      MyApp.exe
+      MyApp.iss
+      Output/
+        MyApp_Setup_2026.7.23.exe
+    MyApp-2026.7.23-linux.tar.gz
+    MyApp-2026.7.23-windows.zip
 ```
 
-Generated scripts are intentionally visible and editable. PackForge is a generator and runner, not a hidden packaging system.
+The corresponding build source folders may be the same folders when publishing and building on the same operating system, or copied folders on another machine or VM. Build output folders should stay separate from build source folders so repeated builds do not package previous installer artifacts.
 
 ## Requirements
 
@@ -111,7 +161,7 @@ When working on Linux, the expected workflow is:
 
 - generate Windows publish output
 - generate the `.iss` script
-- copy the publish output, icons, and `.iss` file to a Windows machine or VM
+- copy the publish output, icons, wizard images, and `.iss` file to the Windows build source folder on a Windows machine or VM
 - compile the setup executable with Inno Setup
 
 ## License

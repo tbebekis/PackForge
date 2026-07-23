@@ -25,7 +25,15 @@ static public class PublisherProjectValidator
             return string.Empty;
         return System.IO.Path.Combine(Folder, Name);
     }
+    static string ResolvePathFromFolder(string PathText, string Folder)
+    {
+        if (string.IsNullOrWhiteSpace(PathText) || string.IsNullOrWhiteSpace(Folder) || System.IO.Path.IsPathRooted(PathText))
+            return PathText ?? string.Empty;
+        return System.IO.Path.Combine(Folder, PathText);
+    }
     static string Resolve(string Text, PublisherProjectSettings Project) => PublisherProjectPatterns.Resolve(Text, Project);
+    static string Resolve(string Text, PublisherProjectSettings Project, DotNetPublishSettings Settings) => PublisherProjectPatterns.Resolve(Text, Project, Settings);
+    static string ResolveBuild(string Text, PublisherProjectSettings Project) => PublisherProjectPatterns.ResolveBuild(Text, Project);
 
     // ● public
     /// <summary>
@@ -46,11 +54,9 @@ static public class PublisherProjectValidator
         string PackageName = Resolve(Project.PackageName, Project);
         string ProjectFilePath = Resolve(Project.ProjectFilePath, Project);
         string SolutionFolder = Resolve(Project.SolutionFolder, Project);
-        string RawPublishRootFolder = Resolve(Project.PublishRootFolder, Project);
-        string PublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project);
-        string InstallerOutputFolder = PublisherProjectPatterns.ResolveInstallerOutputFolder(Project);
-        string LinuxIconFilePath = Resolve(Project.LinuxIconFilePath, Project);
-        string WindowsIconFilePath = Resolve(Project.WindowsIconFilePath, Project);
+        string LinuxPublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project, Project.LinuxPublish);
+        string WindowsPublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project, Project.WindowsPublish);
+        string LinuxIconFilePath = ResolveBuild(Project.LinuxIconFilePath, Project);
 
         if (string.IsNullOrWhiteSpace(AppName))
             Add(Result, "Error", "App.Name.Required", "App name is required.");
@@ -64,23 +70,25 @@ static public class PublisherProjectValidator
             Add(Result, "Error", "ProjectFile.Missing", ".csproj file does not exist.", ProjectFilePath);
         if (!string.IsNullOrWhiteSpace(SolutionFolder) && !Directory.Exists(SolutionFolder))
             Add(Result, "Warning", "SolutionFolder.Missing", "Solution folder does not exist.", SolutionFolder);
-        if (string.IsNullOrWhiteSpace(RawPublishRootFolder))
-            Add(Result, "Error", "PublishRoot.Required", "Publish root folder is required.");
-        else if (File.Exists(RawPublishRootFolder))
-            Add(Result, "Error", "PublishRoot.IsFile", "Publish root folder points to an existing file, not a folder.", RawPublishRootFolder);
-        if (!string.IsNullOrWhiteSpace(InstallerOutputFolder) && !Directory.Exists(InstallerOutputFolder))
-        {
-            if (File.Exists(InstallerOutputFolder))
-                Add(Result, "Error", "InstallerOutputFolder.IsFile", "Installer output folder points to an existing file, not a folder.", InstallerOutputFolder);
-            else
-                Add(Result, "Warning", "InstallerOutputFolder.Missing", "Installer output folder does not exist yet.", InstallerOutputFolder);
-        }
-
+        if (!string.IsNullOrWhiteSpace(LinuxPublishRootFolder) && File.Exists(LinuxPublishRootFolder))
+            Add(Result, "Error", "LinuxPublishRoot.IsFile", "Linux publish root folder points to an existing file, not a folder.", LinuxPublishRootFolder);
+        if (!string.IsNullOrWhiteSpace(WindowsPublishRootFolder) && File.Exists(WindowsPublishRootFolder))
+            Add(Result, "Error", "WindowsPublishRoot.IsFile", "Windows publish root folder points to an existing file, not a folder.", WindowsPublishRootFolder);
+        if (Project.LinuxPublish.IsEnabled && string.IsNullOrWhiteSpace(LinuxPublishRootFolder))
+            Add(Result, "Error", "LinuxPublishRoot.Required", "Linux publish root folder is required.");
+        if (Project.WindowsPublish.IsEnabled && string.IsNullOrWhiteSpace(WindowsPublishRootFolder))
+            Add(Result, "Error", "WindowsPublishRoot.Required", "Windows publish root folder is required.");
         if (Project.Deb.IsEnabled)
         {
-            string LinuxOutputFolderName = Resolve(Project.LinuxPublish.OutputFolderName, Project);
-            string DebCommandName = Resolve(Project.Deb.CommandName, Project);
+            string LinuxSourceFolder = PublisherProjectPatterns.ResolveLinuxSourceFolder(Project);
+            string DebBuildOutputFolder = PublisherProjectPatterns.ResolveDebBuildOutputFolder(Project);
+            string DebCommandName = ResolveBuild(Project.Deb.CommandName, Project);
+            LinuxIconFilePath = ResolvePathFromFolder(LinuxIconFilePath, LinuxSourceFolder);
 
+            if (string.IsNullOrWhiteSpace(LinuxSourceFolder))
+                Add(Result, "Error", "Deb.SourceFolder.Required", "Linux source folder is required.");
+            if (!string.IsNullOrWhiteSpace(DebBuildOutputFolder) && File.Exists(DebBuildOutputFolder))
+                Add(Result, "Error", "Deb.BuildOutputFolder.IsFile", "Debian build output folder points to an existing file, not a folder.", DebBuildOutputFolder);
             if (!string.IsNullOrWhiteSpace(LinuxIconFilePath) && !File.Exists(LinuxIconFilePath))
                 Add(Result, "Error", "Deb.Icon.Missing", "Linux PNG icon file does not exist.", LinuxIconFilePath);
             if (!Regex.IsMatch(PackageName ?? string.Empty, "^[a-z0-9][a-z0-9+.-]+$"))
@@ -92,29 +100,36 @@ static public class PublisherProjectValidator
             if (!Regex.IsMatch(DebCommandName ?? string.Empty, "^[a-z0-9][a-z0-9._-]*$"))
                 Add(Result, "Error", "Deb.CommandName.Invalid", "Command name must be lowercase and shell-safe.");
 
-            string LinuxPublishFolder = CombinePath(PublishRootFolder, LinuxOutputFolderName);
-            if (!string.IsNullOrWhiteSpace(LinuxOutputFolderName) && !Directory.Exists(LinuxPublishFolder))
-                Add(Result, "Warning", "Deb.PublishFolder.Missing", "Linux publish folder does not exist yet.", LinuxPublishFolder);
+            if (!string.IsNullOrWhiteSpace(LinuxSourceFolder) && !Directory.Exists(LinuxSourceFolder))
+                Add(Result, "Warning", "Deb.SourceFolder.Missing", "Linux source folder does not exist yet.", LinuxSourceFolder);
         }
 
         if (Project.Inno.IsEnabled)
         {
-            string WindowsPublishFolderName = Resolve(Project.Inno.WindowsPublishFolderName, Project);
-            string OutputBaseFilename = Resolve(Project.Inno.OutputBaseFilename, Project);
-            string WizardImageFile = Resolve(Project.Inno.WizardImageFile, Project);
-            string WizardSmallImageFile = Resolve(Project.Inno.WizardSmallImageFile, Project);
+            string WindowsSourceFolder = PublisherProjectPatterns.ResolveWindowsSourceFolder(Project);
+            string InnoBuildOutputFolder = PublisherProjectPatterns.ResolveInnoBuildOutputFolder(Project);
+            string OutputBaseFilename = ResolveBuild(Project.Inno.OutputBaseFilename, Project);
+            string SetupIconFile = ResolveBuild(Project.Inno.SetupIconFile, Project);
+            string WizardImageFile = ResolveBuild(Project.Inno.WizardImageFile, Project);
+            string WizardSmallImageFile = ResolveBuild(Project.Inno.WizardSmallImageFile, Project);
+            SetupIconFile = ResolvePathFromFolder(SetupIconFile, WindowsSourceFolder);
+            WizardImageFile = ResolvePathFromFolder(WizardImageFile, WindowsSourceFolder);
+            WizardSmallImageFile = ResolvePathFromFolder(WizardSmallImageFile, WindowsSourceFolder);
 
-            if (!string.IsNullOrWhiteSpace(WindowsIconFilePath) && !File.Exists(WindowsIconFilePath))
-                Add(Result, "Error", "Inno.Icon.Missing", "Windows ICO icon file does not exist.", WindowsIconFilePath);
+            if (string.IsNullOrWhiteSpace(WindowsSourceFolder))
+                Add(Result, "Error", "Inno.SourceFolder.Required", "Windows source folder is required.");
+            if (!string.IsNullOrWhiteSpace(InnoBuildOutputFolder) && File.Exists(InnoBuildOutputFolder))
+                Add(Result, "Error", "Inno.BuildOutputFolder.IsFile", "Inno Setup build output folder points to an existing file, not a folder.", InnoBuildOutputFolder);
+            if (!string.IsNullOrWhiteSpace(SetupIconFile) && !File.Exists(SetupIconFile))
+                Add(Result, "Error", "Inno.SetupIcon.Missing", "Inno Setup icon file does not exist.", SetupIconFile);
             if (!string.IsNullOrWhiteSpace(WizardImageFile) && !File.Exists(WizardImageFile))
                 Add(Result, "Error", "Inno.WizardImage.Missing", "Inno Setup wizard image file does not exist.", WizardImageFile);
             if (!string.IsNullOrWhiteSpace(WizardSmallImageFile) && !File.Exists(WizardSmallImageFile))
                 Add(Result, "Error", "Inno.WizardSmallImage.Missing", "Inno Setup small wizard image file does not exist.", WizardSmallImageFile);
             if (string.IsNullOrWhiteSpace(Project.AppId))
                 Add(Result, "Error", "Inno.AppId.Required", "Inno Setup AppId is required.");
-            string WindowsPublishFolder = CombinePath(PublishRootFolder, WindowsPublishFolderName);
-            if (!string.IsNullOrWhiteSpace(WindowsPublishFolderName) && !Directory.Exists(WindowsPublishFolder))
-                Add(Result, "Warning", "Inno.PublishFolder.Missing", "Windows publish folder does not exist yet.", WindowsPublishFolder);
+            if (!string.IsNullOrWhiteSpace(WindowsSourceFolder) && !Directory.Exists(WindowsSourceFolder))
+                Add(Result, "Warning", "Inno.SourceFolder.Missing", "Windows source folder does not exist yet.", WindowsSourceFolder);
             if (string.IsNullOrWhiteSpace(OutputBaseFilename))
                 Add(Result, "Error", "Inno.OutputBaseFilename.Required", "Inno output base filename is required.");
         }

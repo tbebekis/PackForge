@@ -1,9 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tp="clr-namespace:Avalonia.Controls;assembly=Tripous.Avalonia.Controls"
              x:Class="PackForge.ProjectEditorForm">
     <UserControl.Styles>
         <Style Selector="ComboBox">
-            <Setter Property="Width" Value="560"/>
+            <Setter Property="Width" Value="600"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
         </Style>
     </UserControl.Styles>
@@ -12,10 +13,11 @@
             <StackPanel Name="pnlToolBar" Classes="ToolBar">
             </StackPanel>
         </Border>
-        <TabControl Name="pagerEditor">
+        <Grid ColumnDefinitions="*,5,760">
+        <TabControl Name="pagerEditor" Grid.Column="0">
             <TabItem Header="General">
                 <ScrollViewer>
-                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="800" HorizontalAlignment="Left" ColumnDefinitions="190,600" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.Column="0" ToolTip.Tip="The PackForge project name. This value is used as the JSON file name in the application Projects folder, so it must be unique and valid as a file name." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Project name"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
                         <TextBox Name="edtName" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" ToolTip.Tip="The human-readable application name. This appears in generated installer scripts, desktop files, menu shortcuts and status text. You can use pattern tokens such as {ProjectName} and {PackageName} so dependent fields follow project renames." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Application name"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
@@ -36,134 +38,154 @@
                         <TextBox Name="edtSolutionFolder" Grid.Row="8" Grid.Column="1" Margin="0,0,0,6"/>
                         <TextBlock Grid.Row="9" Grid.Column="0" ToolTip.Tip="The full path to the target application .csproj file. PackForge passes this file to dotnet publish." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text=".csproj path"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
                         <TextBox Name="edtProjectFilePath" Grid.Row="9" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="10" Grid.Column="0" ToolTip.Tip="The folder where Linux and Windows publish output folders, generated scripts and package artifacts are created." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Publish root folder"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
-                        <TextBox Name="edtPublishRootFolder" Grid.Row="10" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Installer output folder" ToolTip.Tip="The common output folder for generated installers and package artifacts. When empty, PackForge falls back to the publish root folder. Pattern tokens such as {ProjectName}, {PackageName} and {PublishRootFolder} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInstallerOutputFolder" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Linux PNG icon" ToolTip.Tip="The PNG icon file used by Linux and Debian package generation. This should point to a PNG image suitable for desktop launchers, usually a 512x512 application icon. Pattern tokens such as {ProjectName}, {PackageName} and {PublishRootFolder} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtLinuxIconFilePath" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="13" Grid.Column="0" Text="Windows ICO icon" ToolTip.Tip="The ICO icon file used by Windows and Inno Setup metadata. This should point to a Windows .ico file. Pattern tokens such as {ProjectName}, {PackageName} and {PublishRootFolder} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtWindowsIconFilePath" Grid.Row="13" Grid.Column="1" Margin="0,0,0,6"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Publish">
                 <ScrollViewer>
-                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Linux publish" ToolTip.Tip="Settings used to generate and run dotnet publish for the Linux target output that will later feed Debian package generation." FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <Grid Margin="12" Width="800" HorizontalAlignment="Left" ColumnDefinitions="190,600" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Linux publish" ToolTip.Tip="Settings used only while running dotnet publish on the current machine. Debian build does not use this folder directly; it uses Linux source folder in Debian Build." FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables or disables the Linux dotnet publish target for this PackForge project." VerticalAlignment="Center" Margin="0,0,8,6"/>
                         <CheckBox Name="chkLinuxEnabled" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Configuration" ToolTip.Tip="The dotnet build configuration passed with -c. Release is the normal value for distributable packages; Debug is useful only for diagnostics." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboLinuxConfiguration" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="Release"/><ComboBoxItem Content="Debug"/></ComboBox>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Runtime identifier" ToolTip.Tip="The target .NET runtime identifier passed with -r. Use linux-x64 for ordinary 64-bit Intel/AMD Linux packages." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboLinuxRuntime" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="linux-x64"/><ComboBoxItem Content="linux-arm64"/><ComboBoxItem Content="linux-arm"/></ComboBox>
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Output folder" ToolTip.Tip="The folder name under the publish root where Linux dotnet publish writes its output. The Debian script reads binaries from this folder. Pattern tokens such as {ProjectName} and {PackageName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtLinuxOutput" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Extra arguments" ToolTip.Tip="Additional command-line arguments appended to dotnet publish for the Linux target. Leave empty unless the target project needs custom MSBuild properties." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtLinuxExtra" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Self-contained" ToolTip.Tip="When enabled, dotnet publish includes the .NET runtime with the app. This is usually appropriate for desktop installers." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkLinuxSelfContained" Grid.Row="6" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Single file" ToolTip.Tip="Controls PublishSingleFile. Single-file publish can simplify output, but desktop apps often keep this disabled for clearer packaging and assets." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkLinuxSingleFile" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Trimmed" ToolTip.Tip="Controls PublishTrimmed. Trimming can reduce size but may break desktop apps that use reflection or dynamic loading, so keep it disabled unless tested." VerticalAlignment="Center" Margin="0,0,8,10"/>
-                        <CheckBox Name="chkLinuxTrimmed" Grid.Row="8" Grid.Column="1" Margin="0,0,0,10"/>
-                        <Border Grid.Row="9" Grid.ColumnSpan="2" Height="1" Background="#C8CDD4" Margin="0,4,0,12"/>
-                        <TextBlock Grid.Row="10" Grid.ColumnSpan="2" Text="Windows publish" ToolTip.Tip="Settings used to generate dotnet publish output for Windows. The generated Inno Setup script references this output folder." FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables or disables the Windows dotnet publish target for this PackForge project." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkWindowsEnabled" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Configuration" ToolTip.Tip="The dotnet build configuration passed with -c for the Windows publish output." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboWindowsConfiguration" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="Release"/><ComboBoxItem Content="Debug"/></ComboBox>
-                        <TextBlock Grid.Row="13" Grid.Column="0" Text="Runtime identifier" ToolTip.Tip="The target .NET runtime identifier passed with -r. Use win-x64 for ordinary 64-bit Windows installers." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboWindowsRuntime" Grid.Row="13" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="win-x64"/><ComboBoxItem Content="win-x86"/><ComboBoxItem Content="win-arm64"/></ComboBox>
-                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Output folder" ToolTip.Tip="The folder name under the publish root where Windows dotnet publish writes its output. The Inno Setup script references this folder. Pattern tokens such as {ProjectName} and {PackageName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtWindowsOutput" Grid.Row="14" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="15" Grid.Column="0" Text="Extra arguments" ToolTip.Tip="Additional command-line arguments appended to dotnet publish for the Windows target." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtWindowsExtra" Grid.Row="15" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="16" Grid.Column="0" Text="Self-contained" ToolTip.Tip="When enabled, dotnet publish includes the .NET runtime with the Windows app output." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkWindowsSelfContained" Grid.Row="16" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="17" Grid.Column="0" Text="Single file" ToolTip.Tip="Controls PublishSingleFile for Windows output. Keep disabled unless the target application has been tested as a single-file desktop app." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkWindowsSingleFile" Grid.Row="17" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="18" Grid.Column="0" Text="Trimmed" ToolTip.Tip="Controls PublishTrimmed for Windows output. Trimming can break apps that use reflection, so keep disabled unless explicitly verified." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkWindowsTrimmed" Grid.Row="18" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" ToolTip.Tip="Publish-time folder on the machine that runs dotnet publish. PackForge appends the version and output folder name. Debian build does not use this path." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Publish root folder"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <TextBox Name="edtLinuxPublishRootFolder" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Configuration" ToolTip.Tip="The dotnet build configuration passed with -c. Release is the normal value for distributable packages; Debug is useful only for diagnostics." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboLinuxConfiguration" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="Release"/><ComboBoxItem Content="Debug"/></ComboBox>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Runtime identifier" ToolTip.Tip="The target .NET runtime identifier passed with -r. Use linux-x64 for ordinary 64-bit Intel/AMD Linux packages." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboLinuxRuntime" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="linux-x64"/><ComboBoxItem Content="linux-arm64"/><ComboBoxItem Content="linux-arm"/></ComboBox>
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Output folder" ToolTip.Tip="The folder name under the Linux publish root where dotnet publish writes its output. This is publish-time output only; Debian build uses Linux source folder." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtLinuxOutput" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Extra arguments" ToolTip.Tip="Additional command-line arguments appended to dotnet publish for the Linux target. Leave empty unless the target project needs custom MSBuild properties." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtLinuxExtra" Grid.Row="6" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Self-contained" ToolTip.Tip="When enabled, dotnet publish includes the .NET runtime with the app. This is usually appropriate for desktop installers." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkLinuxSelfContained" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Single file" ToolTip.Tip="Controls PublishSingleFile. Single-file publish can simplify output, but desktop apps often keep this disabled for clearer packaging and assets." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkLinuxSingleFile" Grid.Row="8" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Trimmed" ToolTip.Tip="Controls PublishTrimmed. Trimming can reduce size but may break desktop apps that use reflection or dynamic loading, so keep it disabled unless tested." VerticalAlignment="Center" Margin="0,0,8,10"/>
+                        <CheckBox Name="chkLinuxTrimmed" Grid.Row="9" Grid.Column="1" Margin="0,0,0,10"/>
+                        <Border Grid.Row="10" Grid.ColumnSpan="2" Height="1" Background="#C8CDD4" Margin="0,4,0,12"/>
+                        <TextBlock Grid.Row="11" Grid.ColumnSpan="2" Text="Windows publish" ToolTip.Tip="Settings used only while running dotnet publish for Windows output. Inno Setup build does not use this folder directly; it uses Windows source folder in Inno Setup Build." FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables or disables the Windows dotnet publish target for this PackForge project." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkWindowsEnabled" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="13" Grid.Column="0" ToolTip.Tip="Publish-time folder on the machine that runs dotnet publish. PackForge appends the version and output folder name. Inno Setup build does not use this path." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Publish root folder"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <TextBox Name="edtWindowsPublishRootFolder" Grid.Row="13" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Configuration" ToolTip.Tip="The dotnet build configuration passed with -c for the Windows publish output." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboWindowsConfiguration" Grid.Row="14" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="Release"/><ComboBoxItem Content="Debug"/></ComboBox>
+                        <TextBlock Grid.Row="15" Grid.Column="0" Text="Runtime identifier" ToolTip.Tip="The target .NET runtime identifier passed with -r. Use win-x64 for ordinary 64-bit Windows installers." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboWindowsRuntime" Grid.Row="15" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="win-x64"/><ComboBoxItem Content="win-x86"/><ComboBoxItem Content="win-arm64"/></ComboBox>
+                        <TextBlock Grid.Row="16" Grid.Column="0" Text="Output folder" ToolTip.Tip="The folder name under the Windows publish root where dotnet publish writes its output. This is publish-time output only; Inno Setup build uses Windows source folder." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtWindowsOutput" Grid.Row="16" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="17" Grid.Column="0" Text="Extra arguments" ToolTip.Tip="Additional command-line arguments appended to dotnet publish for the Windows target." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtWindowsExtra" Grid.Row="17" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="18" Grid.Column="0" Text="Self-contained" ToolTip.Tip="When enabled, dotnet publish includes the .NET runtime with the Windows app output." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkWindowsSelfContained" Grid.Row="18" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="19" Grid.Column="0" Text="Single file" ToolTip.Tip="Controls PublishSingleFile for Windows output. Keep disabled unless the target application has been tested as a single-file desktop app." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkWindowsSingleFile" Grid.Row="19" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="20" Grid.Column="0" Text="Trimmed" ToolTip.Tip="Controls PublishTrimmed for Windows output. Trimming can break apps that use reflection, so keep disabled unless explicitly verified." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkWindowsTrimmed" Grid.Row="20" Grid.Column="1" Margin="0,0,0,6"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Debian">
+            <TabItem Header="Debian Build">
                 <ScrollViewer>
-                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="800" HorizontalAlignment="Left" ColumnDefinitions="190,600" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables Debian script generation and Debian validation checks for this project." VerticalAlignment="Center" Margin="0,0,8,6"/>
                         <CheckBox Name="chkDebEnabled" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" ToolTip.Tip="The Debian architecture written to the control file. Use amd64 for normal 64-bit Intel/AMD Linux packages. Required when Debian generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Architecture"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
-                        <ComboBox Name="cboDebArchitecture" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="amd64"/><ComboBoxItem Content="arm64"/><ComboBoxItem Content="armhf"/></ComboBox>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Executable" ToolTip.Tip="The executable file name expected inside the Linux publish output folder. The generated launcher runs this file. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtDebExecutable" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" ToolTip.Tip="The command installed under /usr/bin. It should be lowercase, shell-safe and easy to type, for example dbpark. Pattern tokens such as {PackageName} are allowed. Required when Debian generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Command"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
-                        <TextBox Name="edtDebCommand" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Categories" ToolTip.Tip="Semicolon-separated desktop categories written to the .desktop file, for example Development;Database;." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtDebCategories" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Keywords" ToolTip.Tip="Semicolon-separated desktop search keywords written to the .desktop file, for example database;sql;development;." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtDebKeywords" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="6" Grid.Column="0" ToolTip.Tip="The Debian dependency expression written to the control file. Keep the default .NET desktop dependencies unless the target app needs additional system libraries. Required when Debian generation is enabled." VerticalAlignment="Top" Margin="0,4,8,6"><Run Text="Dependencies"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
-                        <TextBox Name="edtDebDependencies" Grid.Row="6" Grid.Column="1" Height="80" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Install dir" ToolTip.Tip="The Linux installation directory for application files, usually under /usr/lib/package-name. Pattern tokens such as {PackageName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtDebInstallDir" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Section" ToolTip.Tip="The Debian package section. Development tools often use devel; general desktop utilities commonly use utils." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboDebSection" Grid.Row="8" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="devel"/><ComboBoxItem Content="utils"/><ComboBoxItem Content="database"/><ComboBoxItem Content="net"/><ComboBoxItem Content="misc"/></ComboBox>
-                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Priority" ToolTip.Tip="The Debian package priority. Optional is the correct value for most third-party desktop applications." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboDebPriority" Grid.Row="9" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="optional"/><ComboBoxItem Content="required"/><ComboBoxItem Content="important"/><ComboBoxItem Content="standard"/><ComboBoxItem Content="extra"/></ComboBox>
-                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Script file" ToolTip.Tip="The generated shell script file name placed in the publish root folder. It normally stays build-deb.sh, but pattern tokens such as {ProjectName} are allowed when you want project-specific script names." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtDebScriptFile" Grid.Row="10" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Output pattern" ToolTip.Tip="The generated .deb file name pattern. Supported tokens include {AppName}, {Version} and {Architecture}." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtDebOutputPattern" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Source folder" TextWrapping="Wrap" ToolTip.Tip="Build-time folder used by Debian generation. It must be visible on the Linux machine that runs dpkg-deb and contain the published app files, this build-deb.sh script, and any Debian assets. Publish root is not used by Debian build." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebLinuxSourceFolder" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Output folder" TextWrapping="Wrap" ToolTip.Tip="Build-time folder where the Debian package is created. Leave empty to use an Output folder under the Debian build source folder. Publish root is not used by Debian build." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebBuildOutputFolder" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Linux PNG icon" ToolTip.Tip="PNG icon used by the Debian .desktop entry. Use a path visible on the Linux build machine; relative paths are resolved from the Linux source folder. Pattern tokens such as {ProjectName} and {PackageName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtLinuxIconFilePath" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="4" Grid.Column="0" ToolTip.Tip="The Debian architecture written to the control file. Use amd64 for normal 64-bit Intel/AMD Linux packages. Required when Debian generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Architecture"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <ComboBox Name="cboDebArchitecture" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="amd64"/><ComboBoxItem Content="arm64"/><ComboBoxItem Content="armhf"/></ComboBox>
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Executable" ToolTip.Tip="The executable file name expected inside the Linux source folder. The generated launcher runs this file. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebExecutable" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="6" Grid.Column="0" ToolTip.Tip="The command installed under /usr/bin. It should be lowercase, shell-safe and easy to type, for example dbpark. Pattern tokens such as {PackageName} are allowed. Required when Debian generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Command"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <TextBox Name="edtDebCommand" Grid.Row="6" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Categories" ToolTip.Tip="Semicolon-separated desktop categories written to the .desktop file, for example Development;Database;." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebCategories" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Keywords" ToolTip.Tip="Semicolon-separated desktop search keywords written to the .desktop file, for example database;sql;development;." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebKeywords" Grid.Row="8" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="9" Grid.Column="0" ToolTip.Tip="The Debian dependency expression written to the control file. Keep the default .NET desktop dependencies unless the target app needs additional system libraries. Required when Debian generation is enabled." VerticalAlignment="Top" Margin="0,4,8,6"><Run Text="Dependencies"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <TextBox Name="edtDebDependencies" Grid.Row="9" Grid.Column="1" Height="80" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Install dir" ToolTip.Tip="The Linux installation directory for application files, usually under /usr/lib/package-name. Pattern tokens such as {PackageName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebInstallDir" Grid.Row="10" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Section" ToolTip.Tip="The Debian package section. Development tools often use devel; general desktop utilities commonly use utils." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDebSection" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="devel"/><ComboBoxItem Content="utils"/><ComboBoxItem Content="database"/><ComboBoxItem Content="net"/><ComboBoxItem Content="misc"/></ComboBox>
+                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Priority" ToolTip.Tip="The Debian package priority. Optional is the correct value for most third-party desktop applications." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboDebPriority" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="optional"/><ComboBoxItem Content="required"/><ComboBoxItem Content="important"/><ComboBoxItem Content="standard"/><ComboBoxItem Content="extra"/></ComboBox>
+                        <TextBlock Grid.Row="13" Grid.Column="0" Text="Script file" ToolTip.Tip="The generated shell script file name. Script generation writes it to the Linux publish output folder; Debian build expects it in the Debian build source folder." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebScriptFile" Grid.Row="13" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Output pattern" ToolTip.Tip="The generated .deb file name pattern. The package is created in the Debian build output folder. Supported tokens include {AppName}, {Version} and {Architecture}." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtDebOutputPattern" Grid.Row="14" Grid.Column="1" Margin="0,0,0,6"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Inno Setup">
+            <TabItem Header="Inno Setup Build">
                 <ScrollViewer>
-                    <Grid Margin="12" Width="760" HorizontalAlignment="Left" ColumnDefinitions="190,560" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid Margin="12" Width="800" HorizontalAlignment="Left" ColumnDefinitions="190,600" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Enabled" ToolTip.Tip="Enables Inno Setup script generation and Windows installer validation for this project." VerticalAlignment="Center" Margin="0,0,8,6"/>
                         <CheckBox Name="chkInnoEnabled" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" ToolTip.Tip="The stable Inno Setup application id. Keep this value stable for the same app so Windows upgrades recognize previous installations. Required when Inno Setup generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="AppId"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
-                        <TextBox Name="edtAppId" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Script file" ToolTip.Tip="The generated .iss script file name placed in the publish root folder. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoScriptFile" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Publisher" ToolTip.Tip="The publisher name written to the Inno Setup [Setup] section and shown by Windows installer UI." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoPublisher" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Publisher URL" ToolTip.Tip="The publisher website URL used for AppPublisherURL. Leave empty when there is no public site." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoPublisherUrl" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="5" Grid.Column="0" Text="App exe" ToolTip.Tip="The executable file name inside the Windows publish folder. Inno Setup shortcuts and post-install launch actions point to this file. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoAppExe" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Windows publish" ToolTip.Tip="The Windows publish output folder name under the publish root. The generated [Files] section copies this folder recursively. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoWindowsPublish" Grid.Row="6" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="7" Grid.Column="0" ToolTip.Tip="The base file name of the generated setup executable, without .exe. Include the app name and version to make artifacts easy to identify. Pattern tokens such as {ProjectName} and {Version} are allowed. Required when Inno Setup generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Output base"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
-                        <TextBox Name="edtInnoOutputBase" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Install scope" ToolTip.Tip="Controls the generated Inno Setup DefaultDirName. User only installs under {localappdata}\Programs and does not require elevation. All Users installs under {autopf} and is intended for machine-wide installation." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboInnoInstallScope" Grid.Row="8" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="User only"/><ComboBoxItem Content="All Users"/></ComboBox>
-                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Default group" ToolTip.Tip="The Start Menu group name created by the installer. Usually this is the application name. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoDefaultGroup" Grid.Row="9" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Setup icon" ToolTip.Tip="The .ico file used for the setup executable icon. It may be copied next to the generated .iss file for Windows VM compilation." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoSetupIcon" Grid.Row="10" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Wizard image" ToolTip.Tip="The large bitmap shown by the Inno Setup wizard. Use this for branded installer artwork. Pattern tokens such as {ProjectName}, {PublishRootFolder} and {InstallerOutputFolder} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoWizardImage" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Small wizard image" ToolTip.Tip="The small bitmap shown by the Inno Setup wizard header. Use a compact application icon or brand mark. Pattern tokens such as {ProjectName}, {PublishRootFolder} and {InstallerOutputFolder} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoWizardSmallImage" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="13" Grid.Column="0" Text="Compression" ToolTip.Tip="The Inno Setup compression algorithm. lzma is the usual modern default for compact installers." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboInnoCompression" Grid.Row="13" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="lzma2/ultra64"/><ComboBoxItem Content="lzma"/><ComboBoxItem Content="zip"/><ComboBoxItem Content="bzip"/><ComboBoxItem Content="none"/></ComboBox>
-                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Solid compression" ToolTip.Tip="Enables solid compression in the generated Inno Setup script. This usually improves compression ratio for application folders." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <CheckBox Name="chkInnoSolidCompression" Grid.Row="14" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="15" Grid.Column="0" Text="Privileges" ToolTip.Tip="The Inno Setup PrivilegesRequired value. lowest is appropriate for per-user installs; admin requests elevation." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <ComboBox Name="cboInnoPrivileges" Grid.Row="15" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="lowest"/><ComboBoxItem Content="admin"/><ComboBoxItem Content="poweruser"/></ComboBox>
-                        <TextBlock Grid.Row="16" Grid.Column="0" Text="Support URL" ToolTip.Tip="The support URL written to AppSupportURL. Leave empty to reuse the publisher URL or omit support-specific metadata later." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoSupportUrl" Grid.Row="16" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="17" Grid.Column="0" Text="Updates URL" ToolTip.Tip="The updates URL written to AppUpdatesURL. Use it when the application has a release or update information page." VerticalAlignment="Center" Margin="0,0,8,6"/>
-                        <TextBox Name="edtInnoUpdatesUrl" Grid.Row="17" Grid.Column="1" Margin="0,0,0,6"/>
-                        <TextBlock Grid.Row="18" Grid.Column="0" Text="Architectures allowed" ToolTip.Tip="The Inno Setup ArchitecturesAllowed tokens. Select one or more architecture compatibility rules that the installer is allowed to run on." VerticalAlignment="Top" Margin="0,4,8,6"/>
-                        <ListBox Name="lboInnoArchitecturesAllowed" Grid.Row="18" Grid.Column="1" SelectionMode="Multiple" Height="76" Margin="0,0,0,6"><ListBoxItem Content="x64compatible"/><ListBoxItem Content="x86compatible"/><ListBoxItem Content="arm64"/></ListBox>
-                        <TextBlock Grid.Row="19" Grid.Column="0" Text="64-bit mode" ToolTip.Tip="The Inno Setup ArchitecturesInstallIn64BitMode tokens. Select architectures that should install into 64-bit locations such as Program Files." VerticalAlignment="Top" Margin="0,4,8,6"/>
-                        <ListBox Name="lboInnoArchitectures64" Grid.Row="19" Grid.Column="1" SelectionMode="Multiple" Height="76" Margin="0,0,0,6"><ListBoxItem Content="x64compatible"/><ListBoxItem Content="arm64"/></ListBox>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Source folder" TextWrapping="Wrap" ToolTip.Tip="Build-time folder used by Inno Setup. It must be visible on the Windows machine or VM that runs ISCC and contain the published app files, this .iss script, setup icon, and wizard images. Publish root is not used by Inno Setup build." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoWindowsSourceFolder" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Output folder" TextWrapping="Wrap" ToolTip.Tip="Build-time folder where Inno Setup creates the setup executable. Leave empty to use an Output folder under the Inno Setup build source folder. Publish root is not used by Inno Setup build." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoBuildOutputFolder" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" ToolTip.Tip="The stable Inno Setup application id. Keep this value stable for the same app so Windows upgrades recognize previous installations. Required when Inno Setup generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="AppId"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <TextBox Name="edtAppId" Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Script file" ToolTip.Tip="The generated .iss script file name. Script generation writes it to the Windows publish output folder; Inno Setup build expects it in the Inno Setup build source folder." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoScriptFile" Grid.Row="4" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Publisher" ToolTip.Tip="The publisher name written to the Inno Setup [Setup] section and shown by Windows installer UI." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoPublisher" Grid.Row="5" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Publisher URL" ToolTip.Tip="The publisher website URL used for AppPublisherURL. Leave empty when there is no public site." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoPublisherUrl" Grid.Row="6" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="App exe" ToolTip.Tip="The executable file name inside the Windows publish folder. Inno Setup shortcuts and post-install launch actions point to this file. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoAppExe" Grid.Row="7" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0" ToolTip.Tip="The base file name of the generated setup executable, without .exe. The setup executable is created in the Inno Setup build output folder. Pattern tokens such as {ProjectName} and {Version} are allowed. Required when Inno Setup generation is enabled." VerticalAlignment="Center" Margin="0,0,8,6"><Run Text="Output base"/><Run Text=" *" Foreground="#D92D20"/></TextBlock>
+                        <TextBox Name="edtInnoOutputBase" Grid.Row="8" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Install scope" ToolTip.Tip="Controls the generated Inno Setup DefaultDirName. User only installs under {localappdata}\Programs and does not require elevation. All Users installs under {autopf} and is intended for machine-wide installation." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboInnoInstallScope" Grid.Row="9" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="User only"/><ComboBoxItem Content="All Users"/></ComboBox>
+                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Default group" ToolTip.Tip="The Start Menu group name created by the installer. Usually this is the application name. Pattern tokens such as {ProjectName} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoDefaultGroup" Grid.Row="10" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Setup icon" ToolTip.Tip="The .ico file used for the setup executable icon. Use a path visible on the Windows build machine; relative paths are resolved from the Windows source folder." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoSetupIcon" Grid.Row="11" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Wizard image" ToolTip.Tip="The large bitmap shown by the Inno Setup wizard. Use a path visible on the Windows build machine; relative paths are resolved from the Windows source folder. Pattern tokens such as {ProjectName} and {Version} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoWizardImage" Grid.Row="12" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="13" Grid.Column="0" Text="Small wizard image" ToolTip.Tip="The small bitmap shown by the Inno Setup wizard header. Use a path visible on the Windows build machine; relative paths are resolved from the Windows source folder. Pattern tokens such as {ProjectName} and {Version} are allowed." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoWizardSmallImage" Grid.Row="13" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Compression" ToolTip.Tip="The Inno Setup compression algorithm. lzma is the usual modern default for compact installers." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboInnoCompression" Grid.Row="14" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="lzma2/ultra64"/><ComboBoxItem Content="lzma"/><ComboBoxItem Content="zip"/><ComboBoxItem Content="bzip"/><ComboBoxItem Content="none"/></ComboBox>
+                        <TextBlock Grid.Row="15" Grid.Column="0" Text="Solid compression" ToolTip.Tip="Enables solid compression in the generated Inno Setup script. This usually improves compression ratio for application folders." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <CheckBox Name="chkInnoSolidCompression" Grid.Row="15" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="16" Grid.Column="0" Text="Privileges" ToolTip.Tip="The Inno Setup PrivilegesRequired value. lowest is appropriate for per-user installs; admin requests elevation." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <ComboBox Name="cboInnoPrivileges" Grid.Row="16" Grid.Column="1" Margin="0,0,0,6"><ComboBoxItem Content="lowest"/><ComboBoxItem Content="admin"/><ComboBoxItem Content="poweruser"/></ComboBox>
+                        <TextBlock Grid.Row="17" Grid.Column="0" Text="Support URL" ToolTip.Tip="The support URL written to AppSupportURL. Leave empty to reuse the publisher URL or omit support-specific metadata later." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoSupportUrl" Grid.Row="17" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="18" Grid.Column="0" Text="Updates URL" ToolTip.Tip="The updates URL written to AppUpdatesURL. Use it when the application has a release or update information page." VerticalAlignment="Center" Margin="0,0,8,6"/>
+                        <TextBox Name="edtInnoUpdatesUrl" Grid.Row="18" Grid.Column="1" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="19" Grid.Column="0" Text="Architectures allowed" ToolTip.Tip="The Inno Setup ArchitecturesAllowed tokens. Select one or more architecture compatibility rules that the installer is allowed to run on." VerticalAlignment="Top" Margin="0,4,8,6"/>
+                        <ListBox Name="lboInnoArchitecturesAllowed" Grid.Row="19" Grid.Column="1" SelectionMode="Multiple" Height="76" Margin="0,0,0,6"><ListBoxItem Content="x64compatible"/><ListBoxItem Content="x86compatible"/><ListBoxItem Content="arm64"/></ListBox>
+                        <TextBlock Grid.Row="20" Grid.Column="0" Text="64-bit mode" ToolTip.Tip="The Inno Setup ArchitecturesInstallIn64BitMode tokens. Select architectures that should install into 64-bit locations such as Program Files." VerticalAlignment="Top" Margin="0,4,8,6"/>
+                        <ListBox Name="lboInnoArchitectures64" Grid.Row="20" Grid.Column="1" SelectionMode="Multiple" Height="76" Margin="0,0,0,6"><ListBoxItem Content="x64compatible"/><ListBoxItem Content="arm64"/></ListBox>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
         </TabControl>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="#C8CDD4"/>
+            <Border Grid.Column="2" BorderBrush="#C8CDD4" BorderThickness="1,0,0,0">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" Classes="ToolbarContainer">
+                        <StackPanel Name="pnlVariablesToolBar" Classes="ToolBar"/>
+                    </Border>
+                    <TabControl>
+                        <TabItem Header="Variables">
+                            <Border Padding="8">
+                                <tp:GroupGrid Name="gridVariables"/>
+                            </Border>
+                        </TabItem>
+                    </TabControl>
+                </DockPanel>
+            </Border>
+        </Grid>
     </DockPanel>
 </UserControl>

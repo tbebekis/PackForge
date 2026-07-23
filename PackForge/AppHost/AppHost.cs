@@ -82,7 +82,6 @@ static internal partial class AppHost
             {
                 ScriptFileName = "{ProjectName}.iss",
                 AppExeName = "{ProjectName}.exe",
-                WindowsPublishFolderName = "{ProjectName}-Windows-x64",
                 OutputBaseFilename = "{ProjectName}_Setup_{Version}",
                 DefaultDirName = Settings.DefaultInnoInstallScope.IsSameText("All Users") ? "{autopf}\\{ProjectName}" : "{localappdata}\\Programs\\{ProjectName}",
                 InstallScope = Settings.DefaultInnoInstallScope,

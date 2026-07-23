@@ -9,7 +9,7 @@ namespace PackForge;
 static public class InnoSetupScriptGenerator
 {
     // ● private
-    static string R(PublisherProjectSettings Project, string Text) => PublisherProjectPatterns.Resolve(Text, Project);
+    static string R(PublisherProjectSettings Project, string Text) => PublisherProjectPatterns.ResolveBuild(Text, Project);
     static string I(string Text) => (Text ?? string.Empty).Replace("\"", "\"\"");
     static string ToInnoPath(string PathText, string BaseFolder)
     {
@@ -54,21 +54,21 @@ static public class InnoSetupScriptGenerator
         if (!Project.Inno.IsEnabled)
             throw new Exception("Inno Setup generation is disabled.");
 
-        string PublishRootFolder = PublisherProjectPatterns.ResolvePublishRootFolder(Project);
-        if (string.IsNullOrWhiteSpace(PublishRootFolder))
-            throw new Exception("Publish root folder is required.");
+        string PublishOutputFolder = PublisherProjectPatterns.ResolvePublishOutputFolder(Project, Project.WindowsPublish);
+        if (string.IsNullOrWhiteSpace(PublishOutputFolder))
+            throw new Exception("Windows publish output folder is required.");
 
-        EnsureFolderCanBeCreated(PublishRootFolder, "Publish root folder");
+        EnsureFolderCanBeCreated(PublishOutputFolder, "Windows publish output folder");
 
         string ScriptFileName = R(Project, Project.Inno.ScriptFileName);
         if (string.IsNullOrWhiteSpace(ScriptFileName))
             throw new Exception("Inno Setup script file name is required.");
 
-        string ScriptFilePath = Path.Combine(PublishRootFolder, ScriptFileName);
-        string SourceFolder = R(Project, Project.Inno.WindowsPublishFolderName);
-        string OutputFolder = PublisherProjectPatterns.ResolveInstallerOutputFolder(Project);
-        if (string.IsNullOrWhiteSpace(OutputFolder) || OutputFolder.IsSameText(PublishRootFolder))
-            OutputFolder = ".";
+        string ScriptFilePath = Path.Combine(PublishOutputFolder, ScriptFileName);
+        string OutputFolder = R(Project, Project.Inno.BuildOutputFolder);
+        if (string.IsNullOrWhiteSpace(OutputFolder))
+            OutputFolder = "Output";
+        OutputFolder = OutputFolder.Replace('/', '\\');
 
         StringBuilder Builder = new();
         Builder.AppendLine("; " + R(Project, Project.AppName) + " Windows installer");
@@ -78,8 +78,8 @@ static public class InnoSetupScriptGenerator
         Builder.AppendLine("#define MyAppVersion \"" + I(R(Project, Project.Version)) + "\"");
         Builder.AppendLine("#define MyAppPublisher \"" + I(R(Project, Project.Inno.AppPublisher)) + "\"");
         Builder.AppendLine("#define MyAppExeName \"" + I(R(Project, Project.Inno.AppExeName)) + "\"");
-        Builder.AppendLine("#define MyAppSourceDir \"" + I(ToInnoPath(SourceFolder, PublishRootFolder)) + "\"");
-        Builder.AppendLine("#define MyAppOutputDir \"" + I(ToInnoPath(OutputFolder, PublishRootFolder)) + "\"");
+        Builder.AppendLine("#define MyAppSourceDir \".\"");
+        Builder.AppendLine("#define MyAppOutputDir \"" + I(OutputFolder) + "\"");
         Builder.AppendLine("#define MyAppUrl \"" + I(R(Project, Project.Inno.AppPublisherUrl)) + "\"");
         Builder.AppendLine();
         Builder.AppendLine("[Setup]");
@@ -115,9 +115,9 @@ static public class InnoSetupScriptGenerator
         Builder.AppendLine("WizardStyle=modern");
         Builder.AppendLine("DisableWelcomePage=no");
         Builder.AppendLine("DisableFinishedPage=no");
-        AddSetupLine(Builder, "WizardImageFile", I(ToInnoPath(R(Project, Project.Inno.WizardImageFile), PublishRootFolder)));
-        AddSetupLine(Builder, "WizardSmallImageFile", I(ToInnoPath(R(Project, Project.Inno.WizardSmallImageFile), PublishRootFolder)));
-        AddSetupLine(Builder, "SetupIconFile", I(ToInnoPath(R(Project, string.IsNullOrWhiteSpace(Project.Inno.SetupIconFile) ? Project.WindowsIconFilePath : Project.Inno.SetupIconFile), PublishRootFolder)));
+        AddSetupLine(Builder, "WizardImageFile", I(ToInnoPath(R(Project, Project.Inno.WizardImageFile), PublishOutputFolder)));
+        AddSetupLine(Builder, "WizardSmallImageFile", I(ToInnoPath(R(Project, Project.Inno.WizardSmallImageFile), PublishOutputFolder)));
+        AddSetupLine(Builder, "SetupIconFile", I(ToInnoPath(R(Project, Project.Inno.SetupIconFile), PublishOutputFolder)));
         Builder.AppendLine();
         Builder.AppendLine("; Enable these after obtaining a code-signing certificate.");
         Builder.AppendLine("; SignTool=signtool");
@@ -130,7 +130,7 @@ static public class InnoSetupScriptGenerator
         Builder.AppendLine("Name: \"desktopicon\"; Description: \"{cm:CreateDesktopIcon}\"; GroupDescription: \"{cm:AdditionalIcons}\"; Flags: unchecked");
         Builder.AppendLine();
         Builder.AppendLine("[Files]");
-        Builder.AppendLine("Source: \"{#MyAppSourceDir}\\*\"; DestDir: \"{app}\"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: \"*.pdb\"");
+        Builder.AppendLine("Source: \"{#MyAppSourceDir}\\*\"; DestDir: \"{app}\"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: \"*.pdb,*.iss\"");
         Builder.AppendLine();
         Builder.AppendLine("[Icons]");
         Builder.AppendLine("Name: \"{group}\\{#MyAppName}\"; Filename: \"{app}\\{#MyAppExeName}\"; WorkingDir: \"{app}\"");

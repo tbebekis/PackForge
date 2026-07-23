@@ -29,10 +29,12 @@ public class PublisherProjectStore
             Item.Deb = new();
         if (Item.Inno == null)
             Item.Inno = new();
+        if (string.IsNullOrWhiteSpace(Item.LinuxPublish.PublishRootFolder) && !string.IsNullOrWhiteSpace(Item.PublishRootFolder))
+            Item.LinuxPublish.PublishRootFolder = Item.PublishRootFolder;
+        if (string.IsNullOrWhiteSpace(Item.WindowsPublish.PublishRootFolder) && !string.IsNullOrWhiteSpace(Item.PublishRootFolder))
+            Item.WindowsPublish.PublishRootFolder = Item.PublishRootFolder;
         if (string.IsNullOrWhiteSpace(Item.LinuxIconFilePath) && !string.IsNullOrWhiteSpace(Item.IconFilePath))
             Item.LinuxIconFilePath = Item.IconFilePath;
-        if (string.IsNullOrWhiteSpace(Item.WindowsIconFilePath) && !string.IsNullOrWhiteSpace(Item.IconFilePath))
-            Item.WindowsIconFilePath = Item.IconFilePath;
         if (string.IsNullOrWhiteSpace(Item.Inno.InstallScope))
             Item.Inno.InstallScope = Item.Inno.DefaultDirName.StartsWith("{autopf}", StringComparison.OrdinalIgnoreCase) ? "All Users" : "User only";
         if (string.IsNullOrWhiteSpace(Item.Inno.DefaultDirName))
