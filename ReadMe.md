@@ -83,13 +83,13 @@ The build uses only the build source folder:
 - Debian Build uses the Debian build source folder and expects the published Linux files, `build-deb.sh`, and Debian assets to be there.
 - Inno Setup Build uses the Inno Setup build source folder and expects the published Windows files, `.iss` script, setup icon, and wizard images to be there.
 
-The build writes only to the build output folder. When the build output folder is empty, PackForge uses an `Output` folder under the matching build source folder.
+The build writes installer artifacts only to the build output folder. When the build output folder is empty, PackForge uses an `Output` folder under the matching build source folder.
 
 When building for the other operating system, copy the publish output folder contents, generated script, and required assets to the target machine or VM. For example, when PackForge runs on Linux and the Windows installer must be built in a Windows VM, copy the Windows publish output folder and the generated `.iss` file to the Windows build source folder.
 
 ## Output Layout
 
-For a project named `MyApp`, a Linux publish machine can create output like:
+For a project named `MyApp`, when publishing, script generation, and build use the same folders, output can look like:
 
 ```text
 Publish/
@@ -163,6 +163,7 @@ When working on Linux, the expected workflow is:
 - generate the `.iss` script
 - copy the publish output, icons, wizard images, and `.iss` file to the Windows build source folder on a Windows machine or VM
 - compile the setup executable with Inno Setup
+- write the setup executable to the Inno Setup build output folder
 
 ## License
 
